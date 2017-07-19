@@ -1,0 +1,40 @@
+##
+
+# sequence 0
+#    series 0 ----|          
+#    series 1 ----|------|
+#    series 2 ----|------|------|
+#                 |      |      |
+# sequence 1      |      |      |
+#    series 0 ----|-|    |      |
+#    series 1 ----|-|----|-|    |
+#    series 2 ----|-|----|-|----|-|
+#                 | |    | |    | |
+#                 ---    ---    ---
+#                 |#|    |#|    |#|
+#                 ---    ---    --- 
+#                  |      |      |
+#                  |      |      |------ superpositioned series 0
+#                  |      |------------- superpositioned series 1
+#                  |-------------------- superpositioned series 2
+
+file superposition.db {
+
+  pattern
+  {NAME,             IN1,                IN2,               OUT, LNK,                TRA}
+
+  # series 0
+  {$(D)ctaSupSer0_0, "0"               , $(D)ctaSeq0Ser0-O, "",  "$(D)ctaSupSer0_1", "$(TR)"} # sequence 0
+  {$(D)ctaSupSer0_1, "$(D)ctaSupSer0_0", $(D)ctaSeq1Ser0-O, "",  "$(D)ctaSupSer0_2", "$(TR)"} # sequence 1
+  {$(D)ctaSupSer0_2, "$(D)ctaSupSer0_1", $(D)ctaSeq2Ser0-O, "",  "",                 "$(TR)"} # sequence 2
+
+  # series 1
+  {$(D)ctaSupSer1_0, "0"               , $(D)ctaSeq0Ser1-O, "",  "$(D)ctaSupSer1_1", "$(TR)"} # sequence 0
+  {$(D)ctaSupSer1_1, "$(D)ctaSupSer1_0", $(D)ctaSeq1Ser1-O, "",  "$(D)ctaSupSer1_2", "$(TR)"} # sequence 1
+  {$(D)ctaSupSer1_2, "$(D)ctaSupSer1_1", $(D)ctaSeq2Ser1-O, "",  "",                 "$(TR)"} # sequence 2
+
+  # series 2
+  {$(D)ctaSupSer2_0, "0"               , $(D)ctaSeq0Ser2-O, "",  "$(D)ctaSupSer2_1", "$(TR)"} # sequence 0
+  {$(D)ctaSupSer2_1, "$(D)ctaSupSer2_0", $(D)ctaSeq1Ser2-O, "",  "$(D)ctaSupSer2_2", "$(TR)"} # sequence 1
+  {$(D)ctaSupSer2_2, "$(D)ctaSupSer2_1", $(D)ctaSeq2Ser2-O, "",  "",                 "$(TR)"} # sequence 2
+}

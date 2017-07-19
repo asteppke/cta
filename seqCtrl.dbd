@@ -1,0 +1,3 @@
+registrar(SeqCtrlRegistrar)
+function(AsubSeqCtrl_init)
+function(AsubSeqCtrl_process)

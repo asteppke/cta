@@ -1,0 +1,12 @@
+##
+
+require qpc, biffiger_r
+require cta
+
+smInit
+
+dbLoadRecords("seqCtrl.db", "P=MTEST-PC-BY84:")
+
+#dbLoadTemplate("sequence.template", "D=MTEST-PC-BY84:, LEN=10, TR=1")
+#dbLoadTemplate("superposition.template", "D=MTEST-PC-BY84:, TR=1")
+

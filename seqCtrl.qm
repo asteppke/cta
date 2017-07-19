@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model version="4.0.3" links="0">
+ <framework name="qpc"/>
+ <package name="Events" stereotype="0x01">
+  <class name="Start" superclass="qpc::QEvt"/>
+  <class name="Stop" superclass="qpc::QEvt"/>
+  <class name="StartOfSeq" superclass="qpc::QEvt"/>
+ </package>
+ <package name="AOs" stereotype="0x02">
+  <class name="SeqCtrl" superclass="qpc::QActive">
+   <attribute name="index" type="long" visibility="0x02" properties="0x00"/>
+   <statechart>
+    <initial target="../1">
+     <action>QS_OBJ_DICTIONARY(&amp;l_seqCtrl);
+QS_FUN_DICTIONARY(&amp;QHsm_top);
+
+QS_FUN_DICTIONARY(&amp;SeqCtrl_stopped);
+QS_FUN_DICTIONARY(&amp;SeqCtrl_running);
+QS_FUN_DICTIONARY(&amp;SeqCtrl_init);
+QS_FUN_DICTIONARY(&amp;SeqCtrl_play);
+
+QS_SIG_DICTIONARY(START_SIG, (void *)0);
+QS_SIG_DICTIONARY(STOP_SIG, (void *)0);
+QS_SIG_DICTIONARY(SOS_SIG, (void *)0);</action>
+     <initial_glyph conn="12,14,5,0,7,7">
+      <action box="0,-2,6,2"/>
+     </initial_glyph>
+    </initial>
+    <state name="stopped">
+     <entry>printf(&quot;Hello from stopped::entry\n&quot;);</entry>
+     <tran trig="START" target="../../2/1">
+      <tran_glyph conn="27,24,1,3,31">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="10,21,17,16">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <state name="running">
+     <tran trig="STOP" target="../../1">
+      <tran_glyph conn="49,52,3,2,-30,-15">
+       <action box="-28,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state name="init">
+      <tran trig="SOS" target="../../2">
+       <tran_glyph conn="70,39,2,0,10">
+        <action box="-4,1,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="58,21,17,18"/>
+     </state>
+     <state name="play">
+      <state_glyph node="57,49,17,11"/>
+     </state>
+     <state_glyph node="49,14,31,56"/>
+    </state>
+    <state_diagram size="88,81"/>
+   </statechart>
+  </class>
+  <attribute name="AO_SeqCtrl" type="QMActive * const" visibility="0x00" properties="0x00"/>
+  <operation name="SeqCtrl_ctor" type="void" visibility="0x02" properties="0x00">
+   <code>QActive_ctor(&amp;l_seqCtrl.super, Q_STATE_CAST(&amp;SeqCtrl_initial));</code>
+  </operation>
+ </package>
+ <directory name=".">
+  <file name="seqCtrl.c">
+   <text>#include &quot;qpc.h&quot;
+
+#include &lt;iocsh.h&gt;
+#include &lt;registryFunction.h&gt;
+#include &lt;epicsExport.h&gt;
+#include &lt;aSubRecord.h&gt;
+
+#include &lt;stdio.h&gt;
+
+
+Q_DEFINE_THIS_FILE
+
+enum SeqCtrl {
+    START_SIG = Q_USER_SIG,
+    STOP_SIG,
+    SOS_SIG,
+    MAX_SIG
+};
+
+/* Active object class -----------------------------------------------------*/
+$declare(AOs::SeqCtrl)
+
+/* Local objects -----------------------------------------------------------*/
+static SeqCtrl l_seqCtrl;   /* storage for seqCtrl */
+static QEvt const * l_SeqCtrlQueueSto[10];
+static QF_MPOOL_EL(QEvt) l_qEvt[10];
+
+/* Philo definition --------------------------------------------------------*/
+$define(AOs::SeqCtrl_ctor)
+$define(AOs::SeqCtrl)
+
+/* Define asub functions */
+static long AsubSeqCtrl_init(aSubRecord* prec) {
+    printf(&quot;AsubSeqCtrl_init() is running\n&quot;);
+    return 0;
+}
+
+static long AsubSeqCtrl_process(aSubRecord *prec) {
+
+    static long lastA = 0;
+    long currentA, currentB;
+    QEvent *peCmd = NULL;
+
+    currentA = *((long*) prec-&gt;a);
+    if (currentA == 0 || currentA == 1) {
+        if (currentA != lastA) {
+            if ( currentA == 0 ) peCmd = Q_NEW(QEvt, STOP_SIG);
+            else peCmd = Q_NEW(QEvt, START_SIG);
+            QACTIVE_POST(&amp;l_seqCtrl.super, peCmd, NULL);
+            lastA = currentA;
+        }
+    }
+
+    currentB = *((long *) prec-&gt;b);
+    if (currentB == 1) {
+        peCmd = Q_NEW(QEvt, SOS_SIG);
+        QACTIVE_POST(&amp;l_seqCtrl.super, peCmd, NULL);
+        *((long *) prec-&gt;b) = 0;
+    }
+
+    return 0;
+}
+
+epicsRegisterFunction(AsubSeqCtrl_init);
+epicsRegisterFunction(AsubSeqCtrl_process);
+
+/* Define epics iocsh function .............................................*/
+static const iocshFuncDef l_initDef = {
+      &quot;smInit&quot;, 0, NULL};
+
+static void InitFunc(const iocshArgBuf *args) {
+    printf(&quot;Hello from InitFunc()\n&quot;);
+
+    SeqCtrl_ctor();
+
+    QF_poolInit(l_qEvt, sizeof(l_qEvt), sizeof(l_qEvt[0]));
+
+    QACTIVE_START(&amp;l_seqCtrl.super,
+        (uint_fast8_t) 1,
+        l_SeqCtrlQueueSto,
+        Q_DIM(l_SeqCtrlQueueSto),
+        (void *) 0,
+        0U,
+        (QEvt *)0);
+}
+
+static void SeqCtrlRegistrar() {
+      iocshRegister(&amp;l_initDef, InitFunc);
+}
+
+epicsExportRegistrar(SeqCtrlRegistrar);
+</text>
+  </file>
+ </directory>
+</model>

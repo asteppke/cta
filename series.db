@@ -1,0 +1,40 @@
+##
+
+record(waveform, "$(P)-I") {
+  field(NELM, "$(LENGTH)")
+  field(FTVL, "LONG")
+
+  field(TPRO, "$(TRA)")
+}
+
+record(waveform, "$(P)Play") {
+
+  field(NELM, "$(LENGTH)")
+  field(FTVL, "LONG")
+
+  field(INP, "$(P)-I")
+
+  field(TPRO, "$(TRA)")
+}
+
+record(subArray, "$(P)Pick") {
+
+  field(INP, "$(P)Play.VAL")
+
+  field(MALM, "$(LENGTH)")
+  field(NELM, "1")
+  field(FTVL, "LONG")
+
+  field(FLNK, "$(P)-O")
+
+  field(TPRO, "$(TRA)")
+}
+
+record(longout, "$(P)-O") {
+
+  field(OMSL, "closed_loop")
+  field(DOL, "$(P)Pick")
+
+  field(TPRO, "$(TRA)")
+}
+

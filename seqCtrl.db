@@ -1,0 +1,28 @@
+##
+
+record(calc, "$(P)PulseId") {
+
+  field(SCAN, "1 second")
+
+  field(INPA, "$(P)PulseId")
+
+  field(VAL, "55")
+
+  field(CALC, "A = A + 1")
+
+  field(FLNK, "$(P)SeqCtrl")
+}
+
+record(aSub, "$(P)SeqCtrl") {
+
+  field(INPA, "0") # start/stop command
+  field(FTA, "LONG")
+
+  field(INPB, "0") # SOS (start of sequence) command
+  field(FTB, "LONG")
+
+  field(INAM, "AsubSeqCtrl_init")
+  field(SNAM, "AsubSeqCtrl_process")
+
+}
+
