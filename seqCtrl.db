@@ -1,14 +1,11 @@
 ##
 
-record(calc, "$(P)PulseId") {
+record(ao, "$(P)PulseId") {
 
-  field(SCAN, "1 second")
-
-  field(INPA, "$(P)PulseId")
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#C0 S0")
 
   field(VAL, "55")
-
-  field(CALC, "A = A + 1")
 
   field(FLNK, "$(P)SeqCtrl")
 }
@@ -24,5 +21,32 @@ record(aSub, "$(P)SeqCtrl") {
   field(INAM, "AsubSeqCtrl_init")
   field(SNAM, "AsubSeqCtrl_process")
 
+}
+
+record(longin, "$(P)Index") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(INP, "#C0 S0")
+
+  field(SCAN, "Event")
+  field(EVNT, "12")
+}
+
+record(bo, "$(P)Start") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#@START_SIG")
+}
+
+record(bo, "$(P)Stop") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#@STOP_SIG")
+}
+
+record(bo, "$(P)SOS") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#@SOS_SIG")
 }
 

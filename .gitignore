@@ -1,0 +1,4 @@
+O.*
+.cvsignore
+seqCtrl.h
+seqCtrl.c

@@ -5,6 +5,9 @@
   <class name="Start" superclass="qpc::QEvt"/>
   <class name="Stop" superclass="qpc::QEvt"/>
   <class name="StartOfSeq" superclass="qpc::QEvt"/>
+  <class name="PulseId" superclass="qpc::QEvt">
+   <attribute name="pulse_id" type="uint64_t" visibility="0x00" properties="0x00"/>
+  </class>
  </package>
  <package name="AOs" stereotype="0x02">
   <class name="SeqCtrl" superclass="qpc::QActive">
@@ -21,7 +24,8 @@ QS_FUN_DICTIONARY(&amp;SeqCtrl_play);
 
 QS_SIG_DICTIONARY(START_SIG, (void *)0);
 QS_SIG_DICTIONARY(STOP_SIG, (void *)0);
-QS_SIG_DICTIONARY(SOS_SIG, (void *)0);</action>
+QS_SIG_DICTIONARY(SOS_SIG, (void *)0);
+QS_SIG_DICTIONARY(PULSE_ID_SIG, (void *)0);</action>
      <initial_glyph conn="12,14,5,0,7,7">
       <action box="0,-2,6,2"/>
      </initial_glyph>
@@ -44,23 +48,32 @@ QS_SIG_DICTIONARY(SOS_SIG, (void *)0);</action>
       </tran_glyph>
      </tran>
      <state name="init">
+      <entry brief="ResetIndex()">ResetIndex();</entry>
       <tran trig="SOS" target="../../2">
        <tran_glyph conn="70,39,2,0,10">
         <action box="-4,1,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="58,21,17,18"/>
+      <state_glyph node="58,21,39,18">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
      </state>
      <state name="play">
-      <state_glyph node="57,49,17,11"/>
+      <tran trig="PULSE_ID" target="..">
+       <action>IncrementIndex();</action>
+       <tran_glyph conn="57,55,3,1,39">
+        <action box="0,-2,30,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="57,49,39,11"/>
      </state>
-     <state_glyph node="49,14,31,56"/>
+     <state_glyph node="49,14,67,56"/>
     </state>
-    <state_diagram size="88,81"/>
+    <state_diagram size="131,81"/>
    </statechart>
   </class>
   <attribute name="AO_SeqCtrl" type="QMActive * const" visibility="0x00" properties="0x00"/>
-  <operation name="SeqCtrl_ctor" type="void" visibility="0x02" properties="0x00">
+  <operation name="SeqCtrl_ctor" type="void" visibility="0x00" properties="0x00">
    <code>QActive_ctor(&amp;l_seqCtrl.super, Q_STATE_CAST(&amp;SeqCtrl_initial));</code>
   </operation>
  </package>
@@ -68,22 +81,18 @@ QS_SIG_DICTIONARY(SOS_SIG, (void *)0);</action>
   <file name="seqCtrl.c">
    <text>#include &quot;qpc.h&quot;
 
+#include &quot;seqCtrl.h&quot;
+
 #include &lt;iocsh.h&gt;
 #include &lt;registryFunction.h&gt;
 #include &lt;epicsExport.h&gt;
 #include &lt;aSubRecord.h&gt;
+#include &lt;dbScan.h&gt;
 
 #include &lt;stdio.h&gt;
 
 
 Q_DEFINE_THIS_FILE
-
-enum SeqCtrl {
-    START_SIG = Q_USER_SIG,
-    STOP_SIG,
-    SOS_SIG,
-    MAX_SIG
-};
 
 /* Active object class -----------------------------------------------------*/
 $declare(AOs::SeqCtrl)
@@ -92,10 +101,28 @@ $declare(AOs::SeqCtrl)
 static SeqCtrl l_seqCtrl;   /* storage for seqCtrl */
 static QEvt const * l_SeqCtrlQueueSto[10];
 static QF_MPOOL_EL(QEvt) l_qEvt[10];
+static QF_MPOOL_EL(PulseId) l_evtStoPulseId[10];
+
+/* Global objects ----------------------------------------------------------*/
+QMActive * const AO_SeqCtrl = &amp;l_seqCtrl.super;
+
+static void ResetIndex() {
+    l_seqCtrl.index = -1;
+}
+
+static void IncrementIndex() {
+    l_seqCtrl.index++;
+    post_event(12);
+}
+
+long GetIndex() {
+    return l_seqCtrl.index;
+}
 
 /* Philo definition --------------------------------------------------------*/
 $define(AOs::SeqCtrl_ctor)
 $define(AOs::SeqCtrl)
+
 
 /* Define asub functions */
 static long AsubSeqCtrl_init(aSubRecord* prec) {
@@ -142,6 +169,8 @@ static void InitFunc(const iocshArgBuf *args) {
     SeqCtrl_ctor();
 
     QF_poolInit(l_qEvt, sizeof(l_qEvt), sizeof(l_qEvt[0]));
+    QF_poolInit(l_evtStoPulseId, sizeof(l_evtStoPulseId),
+      sizeof(l_evtStoPulseId[0]));
 
     QACTIVE_START(&amp;l_seqCtrl.super,
         (uint_fast8_t) 1,
@@ -158,6 +187,29 @@ static void SeqCtrlRegistrar() {
 
 epicsExportRegistrar(SeqCtrlRegistrar);
 </text>
+  </file>
+  <file name="seqCtrl.h">
+   <text>#ifndef SEQ_CTRL_H
+#define SEQ_QTRL_H
+
+#include &quot;qpc.h&quot;
+
+enum SeqCtrl {
+    START_SIG = Q_USER_SIG,
+    STOP_SIG,
+    SOS_SIG,
+    PULSE_ID_SIG,
+    MAX_SIG
+};
+
+$declare(Events::PulseId)
+
+$declare(AOs::SeqCtrl_ctor)
+$declare(AOs::AO_SeqCtrl)
+
+long GetIndex();
+
+#endif</text>
   </file>
  </directory>
 </model>
