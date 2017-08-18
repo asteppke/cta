@@ -1,11 +1,21 @@
 ##
 
-record(ao, "$(P)PulseId") {
+record(bo, "$(P)Start") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#@START_SIG")
+}
+
+record(bo, "$(P)Stop") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#@STOP_SIG")
+}
+
+record(ao, "$(P)SOS") {
 
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S0")
-
-  field(VAL, "55")
 
   field(FLNK, "$(P)SeqCtrl")
 }
@@ -30,23 +40,5 @@ record(longin, "$(P)Index") {
 
   field(SCAN, "Event")
   field(EVNT, "12")
-}
-
-record(bo, "$(P)Start") {
-
-  field(DTYP, "DevSeqCtrl")
-  field(OUT, "#@START_SIG")
-}
-
-record(bo, "$(P)Stop") {
-
-  field(DTYP, "DevSeqCtrl")
-  field(OUT, "#@STOP_SIG")
-}
-
-record(bo, "$(P)SOS") {
-
-  field(DTYP, "DevSeqCtrl")
-  field(OUT, "#@SOS_SIG")
 }
 

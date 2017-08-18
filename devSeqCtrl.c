@@ -99,16 +99,16 @@ long DevSeqCtrlInitAo(aoRecord *record) {
 long DevSeqCtrlWriteAo(aoRecord *record) {
   /* SedePrivate *priv = (SedePrivate *) record->dpvt; */
   int status = 0;
-  PulseId *pulse_id = NULL;
+  StartOfSeq *evt = NULL;
 
   TRACE_DEBUG(tp, ("%s: record <<%s>> writes to C%d S%d",
         __func__, record->name, record->out.value.vmeio.card,
         record->out.value.vmeio.signal));
 
 
-  pulse_id = Q_NEW(PulseId, PULSE_ID_SIG);
-  pulse_id->pulse_id = (uint64_t) record->val;
-  QACTIVE_POST(AO_SeqCtrl, &pulse_id->super, NULL);
+  evt = Q_NEW(StartOfSeq, SOS_SIG);
+  evt->pulse_id = (uint64_t) record->val;
+  QACTIVE_POST(AO_SeqCtrl, &evt->super, NULL);
 
   #if 0
   /* check for init */
@@ -284,8 +284,7 @@ long devSeqCtrlInitBo(boRecord *record) {
   /* setup signal */
   param = record->out.value.instio.string;
   if (strcmp(param, "START_SIG") == 0) record->dpvt = (void *) START_SIG;
-  if (strcmp(param, "STOP_SIG") == 0) record->dpvt = (void *) STOP_SIG;
-  if (strcmp(param, "SOS_SIG") == 0) record->dpvt = (void *) SOS_SIG;
+  else if (strcmp(param, "STOP_SIG") == 0) record->dpvt = (void *) STOP_SIG;
   else {
     errlogSevPrintf(errlogFatal, "%s %s: invalid string parameter %s",
        __func__, record->name, record->out.value.instio.string);
