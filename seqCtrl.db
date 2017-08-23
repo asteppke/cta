@@ -33,12 +33,26 @@ record(aSub, "$(P)SeqCtrl") {
 
 }
 
+record(longout, "$(P)Length") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#C0 S0")
+
+}
+
+record(longout, "$(P)Cycles") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#C0 S1")
+
+}
+
 record(longin, "$(P)Index") {
 
   field(DTYP, "DevSeqCtrl")
   field(INP, "#C0 S0")
 
-  field(SCAN, "Event")
+  field(SCAN, "I/O Intr")
   field(EVNT, "12")
 }
 

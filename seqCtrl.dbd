@@ -3,6 +3,7 @@ function(AsubSeqCtrl_init)
 function(AsubSeqCtrl_process)
 
 device(ao, VME_IO, DevSeqCtrlAo, "DevSeqCtrl")
+device(longout, VME_IO, DevSeqCtrlLongout, "DevSeqCtrl")
 device(longin, VME_IO, DevSeqCtrlLongin, "DevSeqCtrl")
 device(bo, INST_IO, DevSeqCtrlBo, "DevSeqCtrl")
 

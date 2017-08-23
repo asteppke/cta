@@ -4,10 +4,13 @@
 
 #include <devSup.h>
 #include <aoRecord.h>
+#include <longoutRecord.h>
 #include <longinRecord.h>
 #include <boRecord.h>
 #include <epicsExport.h>
 #include <errlog.h>
+#include <dbScan.h>
+#include <dbCommon.h>
 
 #include <string.h>
 
@@ -133,11 +136,77 @@ long DevSeqCtrlWriteAo(aoRecord *record) {
   return status;
 }
 
-/********** long in **********/
+/************************************** longout *******************************/
+
+/* forward declarations */
+long devSeqCtrlInitLongout(longoutRecord *record);
+long devSeqCtrlWriteLongout(longoutRecord *record);
+
+/* device support for longout */
+struct {
+  long number;
+  DEVSUPFUN report;
+  DEVSUPFUN init;
+  DEVSUPFUN init_record;
+  DEVSUPFUN get_ioint_info;
+  DEVSUPFUN write_longout;
+} DevSeqCtrlLongout = {
+  5,
+  NULL,
+  NULL,
+  devSeqCtrlInitLongout,
+  NULL,
+  devSeqCtrlWriteLongout
+};
+epicsExportAddress(dset, DevSeqCtrlLongout);
+
+/*---------------------------------------------------------------------------*/
+long devSeqCtrlInitLongout(longoutRecord *record) {
+
+  TRACE_INFO(tp, ("%s: running for record %s", __func__, record->name));
+
+  /* check arguments */
+  if (record->out.type != VME_IO) {
+    errlogSevPrintf(errlogFatal, "%s: record<<%s>>: illegal OUT link "
+        "type\n", __func__, record->name);
+    return -1;
+  }
+
+  return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+long devSeqCtrlWriteLongout(longoutRecord *record) {
+  int status = 0;
+
+  TRACE_DEBUG(tp, ("%s: record <<%s>> writes to C%d S%d",
+        __func__, record->name, record->out.value.vmeio.card,
+        record->out.value.vmeio.signal));
+
+  switch (record->out.value.vmeio.signal) {
+    case 0:
+      SetLength((uint32_t)record->val);
+      break;
+    case 1:
+      SetCycles((uint32_t)record->val);
+      break;
+    default:
+      errlogSevPrintf(errlogFatal, "%s: record<<%s>>: ilegal signal\n"
+        , __func__, record->name);
+      status = -1;
+  }
+
+  return status;
+}
+
+
+/************************************** longin ********************************/
 
 /* forward declarations */
 long devSeqCtrlInitLongin(longinRecord *record);
 long devSeqCtrlReadLongin(longinRecord *record);
+long devSeqCtrlGetIointInfo(int cmd, struct dbCommon* com, IOSCANPVT *iospvt);
+IOSCANPVT index_scanio;
 
 /* device support for longin */
 struct {
@@ -152,7 +221,7 @@ struct {
   NULL,
   NULL,
   devSeqCtrlInitLongin,
-  NULL,
+  devSeqCtrlGetIointInfo,
   devSeqCtrlReadLongin
 };
 epicsExportAddress(dset, DevSeqCtrlLongin);
@@ -172,6 +241,9 @@ long devSeqCtrlInitLongin(longinRecord *record) {
         "type\n", record->name);
     return -1;
   }
+
+  /* init i/o scanning */
+  scanIoInit(&index_scanio);
 
 #if 0
   signal = record->inp.value.vmeio.signal;
@@ -242,6 +314,17 @@ long devSeqCtrlReadLongin(longinRecord *record) {
   record->val = (epicsInt32) GetIndex();
 
   return status;
+}
+
+long  devSeqCtrlGetIointInfo(int cmd, struct dbCommon* com, IOSCANPVT *iospvt) {
+
+  TRACE_INFO(tp, ("%s: running for record %s", __func__, com->name));
+
+  /* provide IOSCANPVT */
+  *iospvt = index_scanio;
+
+  return 0;
+
 }
 
 /************************************** bo ************************************/
