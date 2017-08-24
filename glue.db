@@ -1,0 +1,44 @@
+##
+
+record(longin, "$(P)Index") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(INP, "#C0 S0")
+
+  field(SCAN, "I/O Intr")
+
+  field(FLNK, "$(P)DriveIndex")
+
+  field(TPRO, "$(TRA)")
+
+}
+
+record(calcout, "$(P)DriveIndex") {
+
+  field(INPA, "$(P)Index")
+
+  field(CALC, "A")
+
+  field(OOPT, "Every Time")
+  field(DOPT, "Use CALC")
+  field(OUT, "$(P)Pick.INDX")
+
+  field(FLNK, "$(P)Pick")
+
+  field(TPRO, "$(TRA)")
+
+}
+
+record(longin, "$(P)Load") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(INP, "#C0 S1")
+
+  field(SCAN, "I/O Intr")
+
+  field(FLNK, "$(P)Play")
+
+  field(TPRO, "$(TRA)")
+
+}
+

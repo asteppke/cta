@@ -1,51 +1,45 @@
 ##
 
-record(bo, "$(P)Start") {
+record(bo, "$(P)Start-I") {
 
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#@START_SIG")
+
+  field(TPRO, "$(TRA)")
 }
 
-record(bo, "$(P)Stop") {
+record(bo, "$(P)Stop-I") {
 
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#@STOP_SIG")
+
+  field(TPRO, "$(TRA)")
 }
 
-record(ao, "$(P)SOS") {
+record(ao, "$(P)SOS-I") {
 
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S0")
 
+  field(TPRO, "$(TRA)")
+
 }
 
-record(longout, "$(P)Length") {
+record(longout, "$(P)Length-I") {
 
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S0")
 
+  field(TPRO, "$(TRA)")
+
 }
 
-record(longout, "$(P)Cycles") {
+record(longout, "$(P)Cycles-I") {
 
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S1")
 
-}
+  field(TPRO, "$(TRA)")
 
-record(longin, "$(P)Index") {
-
-  field(DTYP, "DevSeqCtrl")
-  field(INP, "#C0 S0")
-
-  field(SCAN, "I/O Intr")
-}
-
-record(longin, "$(P)Load") {
-
-  field(DTYP, "DevSeqCtrl")
-  field(INP, "#C0 S1")
-
-  field(SCAN, "I/O Intr")
 }
 
