@@ -39,6 +39,13 @@ record(longin, "$(P)Index") {
   field(INP, "#C0 S0")
 
   field(SCAN, "I/O Intr")
-  field(EVNT, "12")
+}
+
+record(longin, "$(P)Load") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(INP, "#C0 S1")
+
+  field(SCAN, "I/O Intr")
 }
 

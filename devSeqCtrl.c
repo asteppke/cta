@@ -227,12 +227,17 @@ typedef struct {
 } LonginPriv;
 
 /* local objects */
-static LonginGlue s_longin_glue[1];
+static LonginGlue s_longin_glue[2];
 
 /* global functions */
 void SeqCtrl_SetIndex(uint32_t index) {
   s_longin_glue[0].value = (long) index;
   scanIoRequest(s_longin_glue[0].sio);
+}
+
+void SeqCtrl_SetLoad(long dummy) {
+  s_longin_glue[1].value = dummy;
+  scanIoRequest(s_longin_glue[1].sio);
 }
 
 /* device support for longin */
@@ -267,6 +272,7 @@ long devSeqCtrlInitLongin(longinRecord *record) {
   }
   switch (record->inp.value.vmeio.signal) {
     case 0:
+    case 1:
       break;
     default:
       errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
@@ -291,6 +297,9 @@ long devSeqCtrlInitLongin(longinRecord *record) {
     case 0:
       priv->glue = &s_longin_glue[0];
       break;
+    case 1:
+      priv->glue = &s_longin_glue[1];
+      break;
     default:
       errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
           "number %d\n", __func__, record->name, priv->signal);
@@ -314,21 +323,13 @@ long devSeqCtrlReadLongin(longinRecord *record) {
   /* check for init */
   if (!priv) {
     recGblSetSevr(record, UDF_ALARM, INVALID_ALARM);
-    errlogSevPrintf(errlogFatal, "SedeReadLongin %s: record not initialized "
-        "correctly\n", record->name);
+    errlogSevPrintf(errlogFatal, "%s #%s#: record not initialized "
+        "correctly\n", __func__, record->name);
     return -1;
   }
 
   /* get value */
-  switch (priv->signal) {
-    case 0:
-      record->val = priv->glue->value;
-      break;
-    default:
-      errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
-          "number %d\n", __func__, record->name, priv->signal);
-      return S_dev_badSignalNumber;
-  }
+  record->val = priv->glue->value;
 
   return status;
 }
@@ -339,19 +340,18 @@ long  devSeqCtrlGetIointInfo(int cmd, struct dbCommon* com, IOSCANPVT *iospvt) {
 
   TRACE_INFO(tp, ("%s #%s#: running", __func__, com->name));
 
-  /* provide IOSCANPVT */
-  switch (priv->signal) {
-    case 0:
-      *iospvt = priv->glue->sio;
-      break;
-    default:
-      errlogSevPrintf(errlogFatal, "%s %s: invalid signal "
-          "number %d\n", __func__, com->name, priv->signal);
-      return S_dev_badSignalNumber;
+  /* check for init */
+  if (!priv) {
+    recGblSetSevr(com, UDF_ALARM, INVALID_ALARM);
+    errlogSevPrintf(errlogFatal, "%s #%s#: record not initialized "
+        "correctly\n", __func__, com->name);
+    return -1;
   }
 
-  return 0;
+  /* provide IOSCANPVT */
+  *iospvt = priv->glue->sio;
 
+  return 0;
 }
 
 /************************************** bo ************************************/
@@ -427,7 +427,15 @@ static void DevSeqCtrlInitHook(initHookState state) {
   switch(state) {
     case initHookAtBeginning:
       TRACE_INFO(tp, ("%s: running for initHookAtBeginning", __func__));
+
+      /* 0 index */
       scanIoInit(&s_longin_glue[0].sio);
+      s_longin_glue[0].value = 0;     
+
+      /* 1 load */
+      scanIoInit(&s_longin_glue[1].sio);
+      s_longin_glue[1].value = 0;     
+
       break;
     default:
       break;
