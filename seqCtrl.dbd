@@ -1,6 +1,4 @@
-registrar(SeqCtrlRegistrar)
-function(AsubSeqCtrl_init)
-function(AsubSeqCtrl_process)
+registrar(DevSeqCtrlRegister)
 
 device(ao, VME_IO, DevSeqCtrlAo, "DevSeqCtrl")
 device(longout, VME_IO, DevSeqCtrlLongout, "DevSeqCtrl")

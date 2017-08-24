@@ -17,20 +17,6 @@ record(ao, "$(P)SOS") {
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S0")
 
-  field(FLNK, "$(P)SeqCtrl")
-}
-
-record(aSub, "$(P)SeqCtrl") {
-
-  field(INPA, "0") # start/stop command
-  field(FTA, "LONG")
-
-  field(INPB, "0") # SOS (start of sequence) command
-  field(FTB, "LONG")
-
-  field(INAM, "AsubSeqCtrl_init")
-  field(SNAM, "AsubSeqCtrl_process")
-
 }
 
 record(longout, "$(P)Length") {

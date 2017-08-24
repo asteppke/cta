@@ -60,7 +60,7 @@ me-&gt;length = GetLength();</entry>
       <tran trig="SOS">
        <choice target="../../../3">
         <guard brief="index &lt; length &amp;&amp; count &lt; cycles">(me-&gt;index &lt; me-&gt;length) &amp;&amp; (me-&gt;count &lt; me-&gt;cycles)</guard>
-        <action brief="SetIndex(index); index++; count++;">SetIndex(me-&gt;index);
+        <action brief="SeqCtrl_SetIndex(index); index++; count++;">SeqCtrl_SetIndex(me-&gt;index);
 me-&gt;index++;
 me-&gt;count++;</action>
         <choice_glyph conn="79,50,4,0,10">
@@ -77,7 +77,7 @@ me-&gt;count++;</action>
       <tran trig="SOS">
        <choice target="../..">
         <guard brief="index &lt; length">me-&gt;index &lt; me-&gt;length</guard>
-        <action brief="SetIndex(index); index++;">SetIndex(me-&gt;index);
+        <action brief="SeqCtrl_SetIndex(index); index++;">SeqCtrl_SetIndex(me-&gt;index);
 me-&gt;index++;</action>
         <choice_glyph conn="103,71,4,2,9,-39,-9">
          <action box="-38,6,29,3"/>
@@ -85,7 +85,7 @@ me-&gt;index++;</action>
        </choice>
        <choice target="../..">
         <guard brief="count &lt; cycles">me-&gt;count &lt; me-&gt;cycles</guard>
-        <action brief="SetIndex(0); count++; index = 1;">SetIndex(0);
+        <action brief="SeqCtrl_SetIndex(0); count++; index = 1;">SeqCtrl_SetIndex(0);
 me-&gt;index = 1;
 me-&gt;count++;</action>
         <choice_glyph conn="103,71,5,2,5,15,-47,-15">
@@ -108,10 +108,20 @@ me-&gt;count++;</action>
   <attribute name="AO_SeqCtrl" type="QMActive * const" visibility="0x00" properties="0x00"/>
   <attribute name="g_length" type="uint32_t" visibility="0x02" properties="0x00"/>
   <attribute name="g_cycles" type="uint32_t" visibility="0x02" properties="0x00"/>
-  <attribute name="g_index" type="uint32_t" visibility="0x02" properties="0x00"/>
-  <attribute name="index_scanio" type="IOSCANPVT" visibility="0x01" properties="0x00"/>
   <operation name="SeqCtrl_ctor" type="void" visibility="0x00" properties="0x00">
-   <code>QActive_ctor(&amp;l_seqCtrl.super, Q_STATE_CAST(&amp;SeqCtrl_initial));</code>
+   <code>QActive_ctor(&amp;l_seqCtrl.super, Q_STATE_CAST(&amp;SeqCtrl_initial));
+
+QF_poolInit(l_qEvt, sizeof(l_qEvt), sizeof(l_qEvt[0]));
+QF_poolInit(l_evtStoStartOfSeq, sizeof(l_evtStoStartOfSeq),
+    sizeof(l_evtStoStartOfSeq[0]));
+
+QACTIVE_START(&amp;l_seqCtrl.super,
+    (uint_fast8_t) 1,
+    l_SeqCtrlQueueSto,
+    Q_DIM(l_SeqCtrlQueueSto),
+    (void *) 0,
+    0U,
+    (QEvt *)0);</code>
   </operation>
   <operation name="SetLength" type="void" visibility="0x00" properties="0x00">
    <parameter name="length" type="uint32_t"/>
@@ -127,14 +137,6 @@ me-&gt;count++;</action>
   <operation name="GetLength" type="uint32_t" visibility="0x02" properties="0x00">
    <code>return g_length;</code>
   </operation>
-  <operation name="SetIndex" type="void" visibility="0x02" properties="0x00">
-   <parameter name="index" type="uint32_t"/>
-   <code>g_index = index;
-scanIoRequest(index_scanio);</code>
-  </operation>
-  <operation name="GetIndex" type="uint32_t" visibility="0x00" properties="0x00">
-   <code>return g_index;</code>
-  </operation>
  </package>
  <directory name=".">
   <file name="seqCtrl.c">
@@ -142,18 +144,10 @@ scanIoRequest(index_scanio);</code>
 
 #include &quot;seqCtrl.h&quot;
 
-#include &lt;iocsh.h&gt;
-#include &lt;registryFunction.h&gt;
-#include &lt;epicsExport.h&gt;
-#include &lt;aSubRecord.h&gt;
-#include &lt;dbScan.h&gt;
-
 #include &lt;stdio.h&gt;
 
 
 Q_DEFINE_THIS_FILE
-
-
 
 /* Active object class -----------------------------------------------------*/
 $declare(AOs::SeqCtrl)
@@ -176,79 +170,9 @@ $define(AOs::g_cycles)
 $define(AOs::SetCycles)
 $define(AOs::GetCycles)
 
-/* output */
-$declare(AOs::index_scanio)
-$define(AOs::g_index)
-$define(AOs::SetIndex)
-$define(AOs::GetIndex)
-
 /* Philo definition --------------------------------------------------------*/
 $define(AOs::SeqCtrl_ctor)
 $define(AOs::SeqCtrl)
-
-
-/* Define asub functions */
-static long AsubSeqCtrl_init(aSubRecord* prec) {
-    printf(&quot;AsubSeqCtrl_init() is running\n&quot;);
-    return 0;
-}
-
-static long AsubSeqCtrl_process(aSubRecord *prec) {
-
-    static long lastA = 0;
-    long currentA, currentB;
-    QEvent *peCmd = NULL;
-
-    currentA = *((long*) prec-&gt;a);
-    if (currentA == 0 || currentA == 1) {
-        if (currentA != lastA) {
-            if ( currentA == 0 ) peCmd = Q_NEW(QEvt, STOP_SIG);
-            else peCmd = Q_NEW(QEvt, START_SIG);
-            QACTIVE_POST(&amp;l_seqCtrl.super, peCmd, NULL);
-            lastA = currentA;
-        }
-    }
-
-    currentB = *((long *) prec-&gt;b);
-    if (currentB == 1) {
-        peCmd = Q_NEW(QEvt, SOS_SIG);
-        QACTIVE_POST(&amp;l_seqCtrl.super, peCmd, NULL);
-        *((long *) prec-&gt;b) = 0;
-    }
-
-    return 0;
-}
-
-epicsRegisterFunction(AsubSeqCtrl_init);
-epicsRegisterFunction(AsubSeqCtrl_process);
-
-/* Define epics iocsh function .............................................*/
-static const iocshFuncDef l_initDef = {
-      &quot;smInit&quot;, 0, NULL};
-
-static void InitFunc(const iocshArgBuf *args) {
-    printf(&quot;Hello from InitFunc()\n&quot;);
-
-    SeqCtrl_ctor();
-
-    QF_poolInit(l_qEvt, sizeof(l_qEvt), sizeof(l_qEvt[0]));
-    QF_poolInit(l_evtStoStartOfSeq, sizeof(l_evtStoStartOfSeq),
-      sizeof(l_evtStoStartOfSeq[0]));
-
-    QACTIVE_START(&amp;l_seqCtrl.super,
-        (uint_fast8_t) 1,
-        l_SeqCtrlQueueSto,
-        Q_DIM(l_SeqCtrlQueueSto),
-        (void *) 0,
-        0U,
-        (QEvt *)0);
-}
-
-static void SeqCtrlRegistrar() {
-      iocshRegister(&amp;l_initDef, InitFunc);
-}
-
-epicsExportRegistrar(SeqCtrlRegistrar);
 </text>
   </file>
   <file name="seqCtrl.h">
@@ -271,8 +195,9 @@ $declare(Events::StartOfSeq)
 $declare(AOs::SetLength)
 $declare(AOs::SetCycles)
 
+
 /* output */
-$declare(AOs::GetIndex)
+extern void SeqCtrl_SetIndex(uint32_t index);
 
 /* active object */
 $declare(AOs::SeqCtrl_ctor)

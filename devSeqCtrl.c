@@ -11,6 +11,12 @@
 #include <errlog.h>
 #include <dbScan.h>
 #include <dbCommon.h>
+#include <devLib.h>
+#include <iocsh.h>
+#include <epicsExport.h>
+#include <initHooks.h>
+#include <alarm.h>
+#include <recGbl.h>
 
 #include <string.h>
 
@@ -206,7 +212,28 @@ long devSeqCtrlWriteLongout(longoutRecord *record) {
 long devSeqCtrlInitLongin(longinRecord *record);
 long devSeqCtrlReadLongin(longinRecord *record);
 long devSeqCtrlGetIointInfo(int cmd, struct dbCommon* com, IOSCANPVT *iospvt);
-IOSCANPVT index_scanio;
+
+/* types */
+typedef struct {
+  long value;
+  IOSCANPVT sio;
+} LonginGlue;
+
+typedef struct {
+  QMActive * ao;
+  int card;
+  int signal;
+  LonginGlue *glue;
+} LonginPriv;
+
+/* local objects */
+static LonginGlue s_longin_glue[1];
+
+/* global functions */
+void SeqCtrl_SetIndex(uint32_t index) {
+  s_longin_glue[0].value = (long) index;
+  scanIoRequest(s_longin_glue[0].sio);
+}
 
 /* device support for longin */
 struct {
@@ -228,67 +255,62 @@ epicsExportAddress(dset, DevSeqCtrlLongin);
 
 /*---------------------------------------------------------------------------*/
 long devSeqCtrlInitLongin(longinRecord *record) {
-  /* SedePrivate *priv; */
-  /* epicsUInt16 initval; */
-  /* SedeCard *card; */
-  /* int signal; */
+  LonginPriv *priv = NULL;
 
-  TRACE_INFO(tp, ("%s: running for record %s", __func__, record->name));
+  TRACE_INFO(tp, ("%s #%s#: running", __func__, record->name));
 
   /* check arguments */
   if (record->inp.type != VME_IO) {
-    errlogSevPrintf(errlogFatal, "devSeqCtrlInitLongin %s: illegal OUT link "
-        "type\n", record->name);
+    errlogSevPrintf(errlogFatal, "%s #%s#: illegal INP link "
+        "type\n", __func__, record->name);
     return -1;
   }
-
-  /* init i/o scanning */
-  scanIoInit(&index_scanio);
-
-#if 0
-  signal = record->inp.value.vmeio.signal;
-  if (signal < 0 || signal >= 8) {
-    errlogSevPrintf(errlogFatal, "SedeInitLongin %s: invalid signal "
-        "number %d\n", record->name, signal);
-    return S_dev_badSignalNumber;
-  }
-
-  /* open */
-  card = SedeOpen(record->inp.value.vmeio.card);
-  if (!card) {
-    errlogSevPrintf(errlogFatal, "SedeInitLongin %s: invalid card number"
-       " %i\n", record->name, record->inp.value.vmeio.card);
-    return S_dev_noDevice;
+  switch (record->inp.value.vmeio.signal) {
+    case 0:
+      break;
+    default:
+      errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
+          "number %d\n", __func__, record->name,
+          record->inp.value.vmeio.signal);
+      return S_dev_badSignalNumber;
   }
 
   /* alloc memory */
-  priv = (SedePrivate *) malloc(sizeof(SedePrivate));
+  priv = malloc(sizeof(LonginPriv));
   if (!priv) {
-    errlogSevPrintf(errlogFatal, "SedeInitLongin %s: out of memory\n",
+    errlogSevPrintf(errlogFatal, "%s #%s#: out of memory\n", __func__,
         record->name);
     return S_dev_noMemory;
   }
-  priv->card = card;
-  priv->signal = signal;
-  record->dpvt = priv;
 
-  /* init */
-  SedeGet(card, signal, &initval);
-  record->val = (epicsInt32) initval;
-#endif
+  /* assign fields of private struct */
+  priv->ao = AO_SeqCtrl;
+  priv->card = record->inp.value.vmeio.card;
+  priv->signal = record->inp.value.vmeio.signal; 
+  switch (priv->signal) {
+    case 0:
+      priv->glue = &s_longin_glue[0];
+      break;
+    default:
+      errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
+          "number %d\n", __func__, record->name, priv->signal);
+      return S_dev_badSignalNumber;
+  }
+
+  /* save private struct */
+  record->dpvt = priv;
 
   return 0;
 }
 
-/*---------------------------------------------------------------------------*/
+/*----------------------------------------------------------------------------*/
 long devSeqCtrlReadLongin(longinRecord *record) {
   int status = 0;
+  LonginPriv *priv = (LonginPriv *) record->dpvt;
 
-  TRACE_DEBUG(tp, ("%s: record <<%s>> reads from C%d S%d",
-        __func__, record->name, record->inp.value.vmeio.card,
-        record->inp.value.vmeio.signal));
+  TRACE_DEBUG(tp, ("%s #%s#: reading from C%d S%d",
+        __func__, record->name, priv->card, priv->signal));
 
-#if 0
   /* check for init */
   if (!priv) {
     recGblSetSevr(record, UDF_ALARM, INVALID_ALARM);
@@ -297,31 +319,36 @@ long devSeqCtrlReadLongin(longinRecord *record) {
     return -1;
   }
 
-  /* read */
-  {
-    epicsUInt16 value;
-
-    status = SedeGet(priv->card, priv->signal, &value);
-    if (status) {
-      errlogSevPrintf(errlogFatal, "SedeReadLongin %s: SedeGet failed: error "
-          "code 0x%x\n", record->name, status);
-      recGblSetSevr(record, READ_ALARM, INVALID_ALARM);
-    }
-    record->val = (epicsInt32) value;
+  /* get value */
+  switch (priv->signal) {
+    case 0:
+      record->val = priv->glue->value;
+      break;
+    default:
+      errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
+          "number %d\n", __func__, record->name, priv->signal);
+      return S_dev_badSignalNumber;
   }
-#endif
-
-  record->val = (epicsInt32) GetIndex();
 
   return status;
 }
 
+/*----------------------------------------------------------------------------*/
 long  devSeqCtrlGetIointInfo(int cmd, struct dbCommon* com, IOSCANPVT *iospvt) {
+  LonginPriv *priv = (LonginPriv *) com->dpvt;
 
-  TRACE_INFO(tp, ("%s: running for record %s", __func__, com->name));
+  TRACE_INFO(tp, ("%s #%s#: running", __func__, com->name));
 
   /* provide IOSCANPVT */
-  *iospvt = index_scanio;
+  switch (priv->signal) {
+    case 0:
+      *iospvt = priv->glue->sio;
+      break;
+    default:
+      errlogSevPrintf(errlogFatal, "%s %s: invalid signal "
+          "number %d\n", __func__, com->name, priv->signal);
+      return S_dev_badSignalNumber;
+  }
 
   return 0;
 
@@ -393,4 +420,37 @@ long devSeqCtrlWriteBo(boRecord *record) {
 
   return 0;
 }
+
+/****************** init hooks ************************************************/
+static void DevSeqCtrlInitHook(initHookState state) {
+
+  switch(state) {
+    case initHookAtBeginning:
+      TRACE_INFO(tp, ("%s: running for initHookAtBeginning", __func__));
+      scanIoInit(&s_longin_glue[0].sio);
+      break;
+    default:
+      break;
+  }
+
+}
+
+/****************** iocsh functions *******************************************/
+static const iocshFuncDef dev_seq_ctrl_func_def = {"devSeqCtrlInit", 0, NULL};
+
+static void DevSeqCtrlInit(const iocshArgBuf *args) {
+
+  TRACE_INFO(tp, ("%s: running", __func__));
+
+  initHookRegister(DevSeqCtrlInitHook);
+  SeqCtrl_ctor();
+}
+
+static void DevSeqCtrlRegister() {
+
+  iocshRegister(&dev_seq_ctrl_func_def, DevSeqCtrlInit);
+
+}
+
+epicsExportRegistrar(DevSeqCtrlRegister);
 
