@@ -13,8 +13,8 @@ class TestSeries(unittest.TestCase):
     # create PV objects
     pvI = PV('MTEST-PC-BY84:ctaSeq0Ser0-I')
     pvO = PV('MTEST-PC-BY84:ctaSeq0Ser0-O')
-    pvPlay = PV("MTEST-PC-BY84:ctaSeq0Ser0Play.PROC")
-    pvPick = PV("MTEST-PC-BY84:ctaSeq0Ser0Pick.INDX")
+    pvPlay = PV("MTEST-PC-BY84:ctaSeq0Ser0-Load.PROC")
+    pvPick = PV("MTEST-PC-BY84:ctaSeq0Ser0-Index")
 
     # write data to IOC
     pvI.put(numpy.array(data), wait=True)
@@ -25,9 +25,9 @@ class TestSeries(unittest.TestCase):
     # play sequence and verify output
     for i in range(len(data)):
       pvPick.put(i, wait=True)
+      time.sleep(1)
       self.assertEqual(pvO.get(), data[i])
 
-    time.sleep(1)
 
   def test_superposition(self):
 
@@ -39,8 +39,8 @@ class TestSeries(unittest.TestCase):
     # create PV objects
     pvI = [PV('MTEST-PC-BY84:ctaSeq0Ser0-I'), PV('MTEST-PC-BY84:ctaSeq1Ser0-I'), PV('MTEST-PC-BY84:ctaSeq2Ser0-I')]
     pvO = [PV('MTEST-PC-BY84:ctaSeq0Ser0-O'), PV('MTEST-PC-BY84:ctaSeq1Ser0-O'), PV('MTEST-PC-BY84:ctaSeq2Ser0-O')]
-    pvPlay = [PV("MTEST-PC-BY84:ctaSeq0Ser0Play.PROC"), PV("MTEST-PC-BY84:ctaSeq1Ser0Play.PROC"), PV("MTEST-PC-BY84:ctaSeq2Ser0Play.PROC")]
-    pvPick = [PV("MTEST-PC-BY84:ctaSeq0Ser0Pick.INDX"), PV("MTEST-PC-BY84:ctaSeq1Ser0Pick.INDX"), PV("MTEST-PC-BY84:ctaSeq2Ser0Pick.INDX")]
+    pvPlay = [PV("MTEST-PC-BY84:ctaSeq0Ser0-Load.PROC"), PV("MTEST-PC-BY84:ctaSeq1Ser0-Load.PROC"), PV("MTEST-PC-BY84:ctaSeq2Ser0-Load.PROC")]
+    pvPick = [PV("MTEST-PC-BY84:ctaSeq0Ser0-Index"), PV("MTEST-PC-BY84:ctaSeq1Ser0-Index"), PV("MTEST-PC-BY84:ctaSeq2Ser0-Index")]
     pvSupTrg = PV('MTEST-PC-BY84:ctaSupSer0_0.PROC')
     pvSupRes = PV('MTEST-PC-BY84:ctaSupSer0_2')
 

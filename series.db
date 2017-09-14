@@ -1,10 +1,34 @@
 ##
+# mandatory macros
+#   P       Prefix to build record name
+#   LENGTH  Number of elements in series
+# optional macros
+#   TRA     Record processing tracing enable/disable
+#   FPLAY   Forward play processing command to other play record
 
 record(waveform, "$(P)-I") {
   field(NELM, "$(LENGTH)")
   field(FTVL, "LONG")
 
-  field(TPRO, "$(TRA)")
+  field(TPRO, "$(TRA=0)")
+}
+
+record(fanout, "$(P)-Load") {
+
+  field(SELM, "All")
+
+  field(LNK1, "$(P)Play")
+  field(LNK2, "$(FPLAY="")")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(dfanout, "$(P)-Index") {
+
+  field(OUTA, "$(P)Pick.INDX PP")
+  field(OUTB, "$(FPICK="")")
+
+  field(TPRO, "$(TRA=0)")
 }
 
 record(waveform, "$(P)Play") {
@@ -14,7 +38,7 @@ record(waveform, "$(P)Play") {
 
   field(INP, "$(P)-I")
 
-  field(TPRO, "$(TRA)")
+  field(TPRO, "$(TRA=0)")
 }
 
 record(subArray, "$(P)Pick") {
@@ -27,7 +51,7 @@ record(subArray, "$(P)Pick") {
 
   field(FLNK, "$(P)-O")
 
-  field(TPRO, "$(TRA)")
+  field(TPRO, "$(TRA=0)")
 }
 
 record(longout, "$(P)-O") {
@@ -35,6 +59,6 @@ record(longout, "$(P)-O") {
   field(OMSL, "closed_loop")
   field(DOL, "$(P)Pick")
 
-  field(TPRO, "$(TRA)")
+  field(TPRO, "$(TRA=0)")
 }
 
