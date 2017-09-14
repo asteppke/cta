@@ -80,8 +80,8 @@ class TestSeries(unittest.TestCase):
     data = [0, 1, 0, 1, 1, 1]
 
     # create PV objects
-    pvI = PV('MTEST-PC-BY84:-I')
-    pvO = PV('MTEST-PC-BY84:-O')
+    pvI = PV('MTEST-PC-BY84:ctaSeq0Ser0-I')
+    pvO = PV('MTEST-PC-BY84:ctaSeq0Ser0-O')
     pvLength = PV('MTEST-PC-BY84:Length-I')
     pvCycles = PV('MTEST-PC-BY84:Cycles-I')
     pvStart = PV('MTEST-PC-BY84:Start-I')

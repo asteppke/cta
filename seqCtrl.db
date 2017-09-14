@@ -5,7 +5,7 @@ record(bo, "$(P)Start-I") {
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#@START_SIG")
 
-  field(TPRO, "$(TRA)")
+  field(TPRO, "$(TRA=0)")
 }
 
 record(bo, "$(P)Stop-I") {
@@ -13,7 +13,7 @@ record(bo, "$(P)Stop-I") {
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#@STOP_SIG")
 
-  field(TPRO, "$(TRA)")
+  field(TPRO, "$(TRA=0)")
 }
 
 record(ao, "$(P)SOS-I") {
@@ -21,7 +21,7 @@ record(ao, "$(P)SOS-I") {
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S0")
 
-  field(TPRO, "$(TRA)")
+  field(TPRO, "$(TRA=0)")
 
 }
 
@@ -30,7 +30,7 @@ record(longout, "$(P)Length-I") {
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S0")
 
-  field(TPRO, "$(TRA)")
+  field(TPRO, "$(TRA=0)")
 
 }
 
@@ -39,7 +39,48 @@ record(longout, "$(P)Cycles-I") {
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S1")
 
-  field(TPRO, "$(TRA)")
+  field(TPRO, "$(TRA=0)")
 
 }
 
+record(longin, "$(P)Index") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(INP, "#C0 S0")
+
+  field(SCAN, "I/O Intr")
+
+  field(FLNK, "$(P)DriveIndex")
+
+  field(TPRO, "$(TRA=0)")
+
+}
+
+record(calcout, "$(P)DriveIndex") {
+
+  field(INPA, "$(P)Index")
+
+  field(CALC, "A")
+
+  field(OOPT, "Every Time")
+  field(DOPT, "Use CALC")
+  field(OUT, "$(FINDEX)")
+
+  field(FLNK, "$(FINDEX)")
+
+  field(TPRO, "$(TRA=0)")
+
+}
+
+record(longin, "$(P)Load") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(INP, "#C0 S1")
+
+  field(SCAN, "I/O Intr")
+
+  field(FLNK, "$(FLOAD)")
+
+  field(TPRO, "$(TRA=0)")
+
+}
