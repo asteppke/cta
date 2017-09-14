@@ -28,6 +28,53 @@ class TestSeries(unittest.TestCase):
       time.sleep(1)
       self.assertEqual(pvO.get(), data[i])
 
+  def test_sequence(self):
+
+    # define data
+    data = [[0, 1, 0, 1, 0, 1, 0, 1], # series 0
+            [0, 0, 1, 1, 0, 0, 1, 1], # series 1
+            [0, 0, 0, 0, 1, 1, 1, 1]] # series 2
+
+    # create PV objects
+    pvI = [PV('MTEST-PC-BY84:ctaSeq0Ser0-I'), PV('MTEST-PC-BY84:ctaSeq0Ser1-I'), PV('MTEST-PC-BY84:ctaSeq0Ser2-I')]
+    pvO = [PV('MTEST-PC-BY84:ctaSeq0Ser0-O'), PV('MTEST-PC-BY84:ctaSeq0Ser1-O'), PV('MTEST-PC-BY84:ctaSeq0Ser2-O')]
+    pvLength = PV('MTEST-PC-BY84:ctaSeq0Length-I')
+    pvCycles = PV('MTEST-PC-BY84:ctaSeq0Cycles-I')
+    pvStart = PV('MTEST-PC-BY84:ctaSeq0Start-I')
+    pvStop = PV('MTEST-PC-BY84:ctaSeq0Stop-I')
+    pvSOS = PV('MTEST-PC-BY84:ctaSeq0SOS-I')
+
+    # write data to IOC
+    for i in range(3):
+      pvI[i].put(numpy.array(data[i]), wait=True)
+
+    # configure sequence controller
+    pvLength.put(8, wait=True)
+    pvCycles.put(3, wait=True)
+
+    # load data to play
+    pvStart.put(1, wait=True)
+
+    # for each cycle
+    for i in range(3):
+
+      # for each series element
+      for k in range(len(data[0])):
+      
+        # send SOS event
+        pvSOS.put(i+k)
+        time.sleep(1)
+
+        # output of series
+        print('cycle = ' + str(i) + ' index = ' + str(k))
+        print('output series 0 = ' + str(pvO[0].get()))
+        print('output series 1 = ' + str(pvO[1].get()))
+        print('output series 2 = ' + str(pvO[2].get()))
+
+        # check series output
+        self.assertEqual(pvO[0].get(), data[0][k])
+        self.assertEqual(pvO[1].get(), data[1][k])
+        self.assertEqual(pvO[2].get(), data[2][k])
 
   def test_superposition(self):
 
