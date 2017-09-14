@@ -4,7 +4,8 @@
 #   LENGTH  Number of elements in series
 # optional macros
 #   TRA     Record processing tracing enable/disable
-#   FPLAY   Forward play processing command to other play record
+#   FLOAD   Forward load processing to another -Load record
+#   FINDEX  Forward index to another -Index record
 
 record(waveform, "$(P)-I") {
   field(NELM, "$(LENGTH)")
@@ -18,7 +19,7 @@ record(fanout, "$(P)-Load") {
   field(SELM, "All")
 
   field(LNK1, "$(P)Play")
-  field(LNK2, "$(FPLAY="")")
+  field(LNK2, "$(FLOAD="")")
 
   field(TPRO, "$(TRA=0)")
 }
@@ -26,7 +27,7 @@ record(fanout, "$(P)-Load") {
 record(dfanout, "$(P)-Index") {
 
   field(OUTA, "$(P)Pick.INDX PP")
-  field(OUTB, "$(FPICK="")")
+  field(OUTB, "$(FINDEX="")")
 
   field(TPRO, "$(TRA=0)")
 }
