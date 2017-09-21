@@ -1,0 +1,94 @@
+##
+# mandatory macros
+# ----------------
+# SYS
+# CTA
+#
+# optional macros
+# ---------------
+# TR = 0
+
+## sequence 0 --------------------------
+file seqCtrl.db {
+  pattern
+  {P,                FLOAD,                     FINDEX}
+  {"$(SYS)-$(CTA):seq0", "$(SYS)-$(CTA):seq0Ser0-Load", "$(SYS)-$(CTA):seq0Ser0-Index"}
+}
+file series.db {
+  pattern
+  {P,                           LENGTH, FINDEX,                            FLOAD                    }
+  {"$(SYS)-$(CTA):seq0Ser0", "8",    "$(SYS)-$(CTA):seq0Ser1-Index PP",     "$(SYS)-$(CTA):seq0Ser1-Load"}
+  {"$(SYS)-$(CTA):seq0Ser1", "8",    "$(SYS)-$(CTA):seq0Ser2-Index PP",     "$(SYS)-$(CTA):seq0Ser2-Load"}
+  {"$(SYS)-$(CTA):seq0Ser2", "8",    "$(SYS)-$(CTA):supSer0_0 PP", ""                       }
+}
+
+## sequence 1 --------------------------
+#file seqCtrl.db {
+#  pattern
+#  {P,                FLOAD,                     FINDEX}
+#  {"$(SYS)-$(CTA):seq1", "$(SYS)-$(CTA):seq1Ser0-Load", "$(SYS)-$(CTA):seq1Ser0-Index"}
+#}
+#file series.db {
+#  pattern
+#  {P,                    LENGTH, FINDEX,                        FLOAD                    }
+#  {"$(SYS)-$(CTA):seq1Ser0", "8",    "$(SYS)-$(CTA):seq1Ser1-Index PP", "$(SYS)-$(CTA):seq1Ser1-Load"}
+#  {"$(SYS)-$(CTA):seq1Ser1", "8",    "$(SYS)-$(CTA):seq1Ser2-Index PP", "$(SYS)-$(CTA):seq1Ser2-Load"}
+#  {"$(SYS)-$(CTA):seq1Ser2", "8",    "",                            ""                       }
+#}
+
+## sequence 2 --------------------------
+#file seqCtrl.db {
+#  pattern
+#  {P,                FLOAD,                     FINDEX}
+#  {"$(SYS)-$(CTA):seq2", "$(SYS)-$(CTA):seq2Ser0-Load", "$(SYS)-$(CTA):seq2Ser0-Index"}
+#}
+#file series.db {
+#  pattern
+#  {P,                    LENGTH, FINDEX,                        FLOAD                    }
+#  {"$(SYS)-$(CTA):seq2Ser0", "8",    "$(SYS)-$(CTA):seq2Ser1-Index PP", "$(SYS)-$(CTA):seq2Ser1-Load"}
+#  {"$(SYS)-$(CTA):seq2Ser1", "8",    "$(SYS)-$(CTA):seq2Ser2-Index PP", "$(SYS)-$(CTA):seq2Ser2-Load"}
+#  {"$(SYS)-$(CTA):seq2Ser2", "8",    "",                            ""                       }
+#}
+
+# sequence 0
+#    series 0 ----|          
+#    series 1 ----|------|
+#    series 2 ----|------|------|
+#                 |      |      |
+# sequence 1      |      |      |
+#    series 0 ----|-|    |      |
+#    series 1 ----|-|----|-|    |
+#    series 2 ----|-|----|-|----|-|
+#                 | |    | |    | |
+#                 ---    ---    ---
+#                 |#|    |#|    |#|
+#                 ---    ---    --- 
+#                  |      |      |
+#                  |      |      |------ superpositioned series 0
+#                  |      |------------- superpositioned series 1
+#                  |-------------------- superpositioned series 2
+
+file superposition.db {
+
+  pattern
+  {NAME,                       IN1,                IN2,                         OUT,                                  LNK,                TRA}
+
+  # series 0
+  {$(SYS)-$(CTA):supSer0_0, "0"               , $(SYS)-$(CTA):seq0Ser0-O, "$(SYS)-$(EOS):Evt-1-Ena-Sel",  "$(SYS)-$(CTA):supSer1_0", "$(TR=0)"} # sequence 0
+#  {$(SYS)-$(CTA):supSer0_0, "0"               , $(SYS)-$(CTA):seq0Ser0-O, "",  "$(SYS)-$(CTA):supSer0_1", "$(TR=0)"} # sequence 0
+#  {$(SYS)-$(CTA):supSer0_1, "$(SYS)-$(CTA):supSer0_0", $(SYS)-$(CTA):seq1Ser0-O, "",  "$(SYS)-$(CTA):supSer0_2", "$(TR=0)"} # sequence 1
+#  {$(SYS)-$(CTA):supSer0_2, "$(SYS)-$(CTA):supSer0_1", $(SYS)-$(CTA):seq2Ser0-O, "",  "",                 "$(TR=0)"} # sequence 2
+#
+#  # series 1
+  {$(SYS)-$(CTA):supSer1_0, "0"               , $(SYS)-$(CTA):seq0Ser1-O, "$(SYS)-$(EOS):Evt-2-Ena-Sel",  "$(SYS)-$(CTA):supSer2_0", "$(TR=0)"} # sequence 0
+#  {$(SYS)-$(CTA):supSer1_0, "0"               , $(SYS)-$(CTA):seq0Ser1-O, "",  "$(SYS)-$(CTA):supSer1_1", "$(TR=0)"} # sequence 0
+#  {$(SYS)-$(CTA):supSer1_1, "$(SYS)-$(CTA):supSer1_0", $(SYS)-$(CTA):seq1Ser1-O, "",  "$(SYS)-$(CTA):supSer1_2", "$(TR=0)"} # sequence 1
+#  {$(SYS)-$(CTA):supSer1_2, "$(SYS)-$(CTA):supSer1_1", $(SYS)-$(CTA):seq2Ser1-O, "",  "",                 "$(TR=0)"} # sequence 2
+#
+#  # series 2
+  {$(SYS)-$(CTA):supSer2_0, "0"               , $(SYS)-$(CTA):seq0Ser2-O, "$(SYS)-$(EOS):Evt-3-Ena-Sel",  "", "$(TR=0)"} # sequence 0
+#  {$(SYS)-$(CTA):supSer2_0, "0"               , $(SYS)-$(CTA):seq0Ser2-O, "",  "$(SYS)-$(CTA):supSer2_1", "$(TR=0)"} # sequence 0
+#  {$(SYS)-$(CTA):supSer2_1, "$(SYS)-$(CTA):supSer2_0", $(SYS)-$(CTA):seq1Ser2-O, "",  "$(SYS)-$(CTA):supSer2_2", "$(TR=0)"} # sequence 1
+#  {$(SYS)-$(CTA):supSer2_2, "$(SYS)-$(CTA):supSer2_1", $(SYS)-$(CTA):seq2Ser2-O, "",  "",                 "$(TR=0)"} # sequence 2
+}
+

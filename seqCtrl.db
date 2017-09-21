@@ -1,4 +1,21 @@
 ##
+# Mandatory macros
+# ----------------
+# P
+# FLOAD
+# FINDEX
+#
+# Optional macros
+# ---------------
+# TRA (default=0)
+
+#record(bi, "$(P)SOS-Trigger") {
+#  field(DTYP, "EVG START OF SEQ")
+#  field(INP,  "#C S1 @EVG0")
+#  field(SCAN, "I/O Intr")
+#  field(FLNK, "$(P)SOS-I")
+#  field(PRIO, "HIGH")
+#}
 
 record(bo, "$(P)Start-I") {
 
