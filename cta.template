@@ -16,10 +16,10 @@ file seqCtrl.db {
 }
 file series.db {
   pattern
-  {P,                           LENGTH, FINDEX,                            FLOAD                    }
-  {"$(SYS)-$(CTA):seq0Ser0", "8",    "$(SYS)-$(CTA):seq0Ser1-Index PP",     "$(SYS)-$(CTA):seq0Ser1-Load"}
-  {"$(SYS)-$(CTA):seq0Ser1", "8",    "$(SYS)-$(CTA):seq0Ser2-Index PP",     "$(SYS)-$(CTA):seq0Ser2-Load"}
-  {"$(SYS)-$(CTA):seq0Ser2", "8",    "$(SYS)-$(CTA):supSer0_0 PP", ""                       }
+  {P,                        LENGTH, FINDEX,                            FLOAD                        }
+  {"$(SYS)-$(CTA):seq0Ser0", "8",    "$(SYS)-$(CTA):seq0Ser1-Index PP", "$(SYS)-$(CTA):seq0Ser1-Load"}
+  {"$(SYS)-$(CTA):seq0Ser1", "8",    "$(SYS)-$(CTA):seq0Ser2-Index PP", "$(SYS)-$(CTA):seq0Ser2-Load"}
+  {"$(SYS)-$(CTA):seq0Ser2", "8",    "",                                ""                           }
 }
 
 ## sequence 1 --------------------------
