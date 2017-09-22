@@ -1,0 +1,10 @@
+##
+
+epicsEnvSet SYS MTEST-PC-BY84
+
+require cta
+
+devSeqCtrlInit
+
+dbLoadRecords("seqCtrl.db", "P=$(SYS):, CTA=CTA, FLOAD="", FINDEX="", TRA=1")
+
