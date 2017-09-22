@@ -227,7 +227,7 @@ typedef struct {
 } LonginPriv;
 
 /* local objects */
-static LonginGlue s_longin_glue[2];
+static LonginGlue s_longin_glue[3];
 
 /* global functions */
 void SeqCtrl_SetIndex(uint32_t index) {
@@ -238,6 +238,11 @@ void SeqCtrl_SetIndex(uint32_t index) {
 void SeqCtrl_SetLoad(long dummy) {
   s_longin_glue[1].value = dummy;
   scanIoRequest(s_longin_glue[1].sio);
+}
+
+void SeqCtrl_SetSop(long dummy) {
+  s_longin_glue[2].value = dummy;
+  scanIoRequest(s_longin_glue[2].sio);
 }
 
 /* device support for longin */
@@ -273,6 +278,7 @@ long devSeqCtrlInitLongin(longinRecord *record) {
   switch (record->inp.value.vmeio.signal) {
     case 0:
     case 1:
+    case 2:
       break;
     default:
       errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
@@ -299,6 +305,9 @@ long devSeqCtrlInitLongin(longinRecord *record) {
       break;
     case 1:
       priv->glue = &s_longin_glue[1];
+      break;
+    case 2:
+      priv->glue = &s_longin_glue[2];
       break;
     default:
       errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
@@ -395,6 +404,7 @@ long devSeqCtrlInitBo(boRecord *record) {
   param = record->out.value.instio.string;
   if (strcmp(param, "START_SIG") == 0) record->dpvt = (void *) START_SIG;
   else if (strcmp(param, "STOP_SIG") == 0) record->dpvt = (void *) STOP_SIG;
+  else if (strcmp(param, "SOP_SIG") == 0) record->dpvt = (void *) SOP_SIG;
   else {
     errlogSevPrintf(errlogFatal, "%s %s: invalid string parameter %s",
        __func__, record->name, record->out.value.instio.string);
@@ -412,7 +422,7 @@ long devSeqCtrlWriteBo(boRecord *record) {
   switch (signal) {
     case START_SIG:
     case STOP_SIG:
-    case SOS_SIG:
+    case SOP_SIG:
       evt = Q_NEW(QEvt, signal);
       QACTIVE_POST(AO_SeqCtrl, evt, NULL);
       break;
@@ -435,6 +445,10 @@ static void DevSeqCtrlInitHook(initHookState state) {
       /* 1 load */
       scanIoInit(&s_longin_glue[1].sio);
       s_longin_glue[1].value = 0;     
+
+      /* 2 SOP */
+      scanIoInit(&s_longin_glue[2].sio);
+      s_longin_glue[2].value = 0;     
 
       break;
     default:
