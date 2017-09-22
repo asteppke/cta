@@ -42,6 +42,14 @@ record(ao, "$(P)SOS-I") {
 
 }
 
+record(bo, "$(P)SOP-I") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#@SOP_SIG")
+
+  field(TPRO, "$(TRA=0)")
+}
+
 record(longout, "$(P)Length-I") {
 
   field(DTYP, "DevSeqCtrl")
@@ -65,9 +73,28 @@ record(longin, "$(P)Index") {
   field(DTYP, "DevSeqCtrl")
   field(INP, "#C0 S0")
 
+  field(TPRO, "$(TRA=0)")
+
+}
+
+record(longin, "$(P)SOP") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(INP, "#C0 S2")
+
   field(SCAN, "I/O Intr")
 
-  field(FLNK, "$(P)DriveIndex")
+  field(FLNK, "$(P)Proc")
+
+  field(TPRO, "$(TRA=0)")
+
+}
+
+record(fanout, "$(P)Proc") {
+
+#  field(LNK1, "$(P)Index") # read index
+#  field(LNK2, "$(P)DriveIndex") # process series
+#  field(LNK3, "SYS-$(CTA):supSer0_0") # process superposition
 
   field(TPRO, "$(TRA=0)")
 
@@ -82,8 +109,6 @@ record(calcout, "$(P)DriveIndex") {
   field(OOPT, "Every Time")
   field(DOPT, "Use CALC")
   field(OUT, "$(FINDEX)")
-
-  field(FLNK, "$(FINDEX)")
 
   field(TPRO, "$(TRA=0)")
 
