@@ -21,7 +21,7 @@
 #include <string.h>
 
 /* tracing */
-static int devSeqCtrlTraceLevel = TRACE_LEVEL_DEBUG;
+static int devSeqCtrlTraceLevel = TRACE_LEVEL_NONE;
 static TracePoint tp = {&devSeqCtrlTraceLevel, "devSeqCtrl"};
 
 /********** analog output **********/
