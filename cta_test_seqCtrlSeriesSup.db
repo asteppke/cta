@@ -1,0 +1,19 @@
+#
+
+record(fanout, "$(P)Drv") {
+
+  field(LNK1, "$(P)DrvSeq0")
+  field(LNK2, "$(SYS)-CTA:supSer0_0")
+
+}
+
+record(dfanout, "$(P)DrvSeq0") {
+
+  field(OMSL, "closed_loop")
+
+  field(DOL, "$(SYS)-CTA:seq0Ctrl-Index-O PP")
+
+  field(OUTA, "$(SYS)-CTA:seq0Ser0-Index PP")
+
+}
+

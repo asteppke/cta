@@ -30,7 +30,7 @@ QS_SIG_DICTIONARY(SOS_SIG, (void *)0);</action>
      </initial_glyph>
     </initial>
     <state name="root">
-     <tran trig="SOP">
+     <tran trig="SOS">
       <action brief="SeqCtrl_SetSop()">SeqCtrl_SetSop(0);</action>
       <tran_glyph conn="2,65,3,-1,26">
        <action box="0,-2,21,2"/>
@@ -60,17 +60,19 @@ me-&gt;length = GetLength();</entry>
        </tran_glyph>
       </tran>
       <tran trig="SOS" target="../../1">
+       <action brief="SeqCtrl_SetSop();">SeqCtrl_SetSop(0);</action>
        <tran_glyph conn="47,48,3,2,-28,-11">
-        <action box="-6,-2,5,2"/>
+        <action box="-20,-2,19,3"/>
        </tran_glyph>
       </tran>
       <state name="init">
        <tran trig="SOS">
         <choice target="../../../3">
          <guard brief="index &lt; length &amp;&amp; count &lt; cycles">(me-&gt;index &lt; me-&gt;length) &amp;&amp; (me-&gt;count &lt; me-&gt;cycles)</guard>
-         <action brief="SeqCtrl_SetIndex(index); index++; count++;">SeqCtrl_SetIndex(me-&gt;index);
+         <action brief="SeqCtrl_SetIndex(index); index++; count++; SeqCtrl_SetSop();">SeqCtrl_SetIndex(me-&gt;index);
 me-&gt;index++;
-me-&gt;count++;</action>
+me-&gt;count++;
+SeqCtrl_SetSop(0);</action>
          <choice_glyph conn="79,50,4,0,10">
           <action box="1,2,28,6"/>
          </choice_glyph>
@@ -85,19 +87,21 @@ me-&gt;count++;</action>
        <tran trig="SOS">
         <choice target="../..">
          <guard brief="index &lt; length">me-&gt;index &lt; me-&gt;length</guard>
-         <action brief="SeqCtrl_SetIndex(index); index++;">SeqCtrl_SetIndex(me-&gt;index);
-me-&gt;index++;</action>
+         <action brief="SeqCtrl_SetIndex(index); index++; SeqCtrl_SetSop()">SeqCtrl_SetIndex(me-&gt;index);
+me-&gt;index++;
+SeqCtrl_SetSop(0);</action>
          <choice_glyph conn="103,71,4,2,9,-39,-9">
-          <action box="-38,6,29,3"/>
+          <action box="-38,6,45,3"/>
          </choice_glyph>
         </choice>
         <choice target="../..">
          <guard brief="count &lt; cycles">me-&gt;count &lt; me-&gt;cycles</guard>
-         <action brief="SeqCtrl_SetIndex(0); count++; index = 1;">SeqCtrl_SetIndex(0);
+         <action brief="SeqCtrl_SetIndex(0); count++; index = 1;SeqCtrl_SetSop()">SeqCtrl_SetIndex(0);
 me-&gt;index = 1;
-me-&gt;count++;</action>
+me-&gt;count++;
+SeqCtrl_SetSop(0);</action>
          <choice_glyph conn="103,71,5,2,5,15,-47,-15">
-          <action box="-40,12,42,3"/>
+          <action box="-40,12,52,4"/>
          </choice_glyph>
         </choice>
         <tran_glyph conn="90,67,1,-1,13,4">

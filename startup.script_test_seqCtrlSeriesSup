@@ -1,0 +1,20 @@
+##
+
+epicsEnvSet SYS MTEST-PC-BY84
+
+require cta
+
+devSeqCtrlInit
+
+dbLoadRecords("cta_test_seqCtrlSeriesSup.db", "SYS=$(SYS), P=$(SYS)-CTA:")
+
+dbLoadRecords("seqCtrl.db", "P=$(SYS)-CTA:seq0Ctrl-, FLOAD=$(SYS)-CTA:seq0Ser0-Load, FINDEX=$(SYS)-CTA:Drv, TRA=1")
+
+dbLoadRecords("series.db", "P=$(SYS)-CTA:seq0Ser0, LENGTH=8, FINDEX=$(SYS)-CTA:seq0Ser1-Index PP, FLOAD=$(SYS)-CTA:seq0Ser1-Load")
+dbLoadRecords("series.db", "P=$(SYS)-CTA:seq0Ser1, LENGTH=8, FINDEX=$(SYS)-CTA:seq0Ser2-Index PP, FLOAD=$(SYS)-CTA:seq0Ser2-Load")
+dbLoadRecords("series.db", "P=$(SYS)-CTA:seq0Ser2, LENGTH=8")
+
+dbLoadRecords("superposition.db", "NAME=$(SYS)-CTA:supSer0_0, IN1="", IN2=$(SYS)-CTA:seq0Ser0-O, OUT="", LNK=$(SYS)-CTA:supSer1_0, TRA=1")
+dbLoadRecords("superposition.db", "NAME=$(SYS)-CTA:supSer1_0, IN1="", IN2=$(SYS)-CTA:seq0Ser1-O, OUT="", LNK=$(SYS)-CTA:supSer2_0, TRA=1")
+dbLoadRecords("superposition.db", "NAME=$(SYS)-CTA:supSer2_0, IN1="", IN2=$(SYS)-CTA:seq0Ser2-O, OUT="", LNK="", TRA=1")
+

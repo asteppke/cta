@@ -42,14 +42,6 @@ record(ao, "$(P)SOS-I") {
 
 }
 
-record(bo, "$(P)SOP-I") {
-
-  field(DTYP, "DevSeqCtrl")
-  field(OUT, "#@SOP_SIG")
-
-  field(TPRO, "$(TRA=0)")
-}
-
 record(longout, "$(P)Length-I") {
 
   field(DTYP, "DevSeqCtrl")
@@ -68,7 +60,7 @@ record(longout, "$(P)Cycles-I") {
 
 }
 
-record(longin, "$(P)Index") {
+record(longin, "$(P)Index-O") {
 
   field(DTYP, "DevSeqCtrl")
   field(INP, "#C0 S0")
@@ -77,44 +69,7 @@ record(longin, "$(P)Index") {
 
 }
 
-record(longin, "$(P)SOP") {
-
-  field(DTYP, "DevSeqCtrl")
-  field(INP, "#C0 S2")
-
-  field(SCAN, "I/O Intr")
-
-  field(FLNK, "$(P)Proc")
-
-  field(TPRO, "$(TRA=0)")
-
-}
-
-record(fanout, "$(P)Proc") {
-
-#  field(LNK1, "$(P)Index") # read index
-#  field(LNK2, "$(P)DriveIndex") # process series
-#  field(LNK3, "SYS-$(CTA):supSer0_0") # process superposition
-
-  field(TPRO, "$(TRA=0)")
-
-}
-
-record(calcout, "$(P)DriveIndex") {
-
-  field(INPA, "$(P)Index")
-
-  field(CALC, "A")
-
-  field(OOPT, "Every Time")
-  field(DOPT, "Use CALC")
-  field(OUT, "$(FINDEX)")
-
-  field(TPRO, "$(TRA=0)")
-
-}
-
-record(longin, "$(P)Load") {
+record(longin, "$(P)Load_") {
 
   field(DTYP, "DevSeqCtrl")
   field(INP, "#C0 S1")
@@ -123,6 +78,24 @@ record(longin, "$(P)Load") {
 
   field(FLNK, "$(FLOAD)")
 
+  field(PRIO, "HIGH")
+
   field(TPRO, "$(TRA=0)")
 
 }
+
+record(longin, "$(P)SOP_") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(INP, "#C0 S2")
+
+  field(SCAN, "I/O Intr")
+
+  field(FLNK, "$(FINDEX)")
+
+  field(PRIO, "HIGH")
+
+  field(TPRO, "$(TRA=0)")
+
+}
+

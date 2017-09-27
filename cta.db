@@ -1,0 +1,82 @@
+#
+
+record(bi, "$(P)SOS1") {
+
+  field(DTYP, "EVG START OF SEQ")
+  field(INP, "#C S1 @EVG1")
+
+  field(SCAN, "I/O Intr")
+
+  field(PRIO, "HIGH")
+
+  field(FLNK, "$(P)CurrSeq")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(bi, "$(P)SOS2") {
+
+  field(DTYP, "EVG START OF SEQ")
+  field(INP, "#C S2 @EVG1")
+
+  field(SCAN, "I/O Intr")
+
+  field(PRIO, "HIGH")
+
+  field(FLNK, "$(P)CurrSeq")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(calc, "$(P)CurrSeq") {
+
+  field(INPA, "$(P)SOS1.PACT")
+  
+  field(CALC, "A ? 1 : 2")
+
+  field(FLNK, "$(SYS)-$(CTA):seq0Ctrl-SOS-I")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(fanout, "$(P)Drv") {
+
+  field(LNK1, "$(P)DrvSeq0")
+  field(LNK2, "$(SYS)-$(CTA):supSer0_0")
+  field(LNK3, "$(P)Seq1Trig")
+  field(LNK4, "$(P)Seq2Trig")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(dfanout, "$(P)DrvSeq0") {
+
+  field(OMSL, "closed_loop")
+
+  field(DOL, "$(SYS)-$(CTA):seq0Ctrl-Index-O PP")
+
+  field(OUTA, "$(SYS)-$(CTA):seq0Ser0-Index PP")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(fanout, "$(P)Seq1Trig") {
+
+  field(DISV, "2")
+  field(SDIS, "$(P)CurrSeq")
+
+  field(LNK1, "$(SYS)-$(EOS):Seq1-FOUT_")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(fanout, "$(P)Seq2Trig") {
+
+  field(DISV, "1")
+  field(SDIS, "$(P)CurrSeq")
+
+  field(LNK1, "$(SYS)-$(EOS):Seq2-FOUT_")
+
+  field(TPRO, "$(TRA=0)")
+}
+
