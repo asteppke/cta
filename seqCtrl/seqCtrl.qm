@@ -52,8 +52,10 @@ me-&gt;cycles = 0;</entry>
       </state_glyph>
      </state>
      <state name="running">
-      <entry brief="cycles = GetCycles(); length = GetLength();">me-&gt;cycles = GetCycles();
-me-&gt;length = GetLength();</entry>
+      <entry brief="cycles = GetCycles(); length = GetLength(); SeqCtrl_SetIsRunning(1);">me-&gt;cycles = GetCycles();
+me-&gt;length = GetLength();
+SeqCtrl_SetIsRunning(1);</entry>
+      <exit brief="SeqCtrl_SetIsRunning(0)">SeqCtrl_SetIsRunning(0);</exit>
       <tran trig="STOP" target="../../1">
        <tran_glyph conn="47,34,3,1,-20">
         <action box="-5,-2,5,2"/>
@@ -112,6 +114,7 @@ SeqCtrl_SetSop(0);</action>
       </state>
       <state_glyph node="47,14,73,79">
        <entry box="1,2,31,3"/>
+       <exit box="1,5,6,2"/>
       </state_glyph>
      </state>
      <state_glyph node="2,9,124,87"/>
@@ -215,6 +218,7 @@ $declare(AOs::SetCycles)
 extern void SeqCtrl_SetIndex(uint32_t index);
 extern void SeqCtrl_SetLoad(long dummy);
 extern void SeqCtrl_SetSop(long dummy);
+extern void SeqCtrl_SetIsRunning(long is_running);
 
 /* active object */
 $declare(AOs::SeqCtrl_ctor)

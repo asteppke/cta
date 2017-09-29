@@ -65,6 +65,23 @@ record(longin, "$(P)Index-O") {
   field(DTYP, "DevSeqCtrl")
   field(INP, "#C0 S0")
 
+  field(SCAN, "I/O Intr")
+
+  field(TPRO, "$(TRA=0)")
+
+}
+
+record(longin, "$(P)IsRunning-O") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(INP, "#C0 S3")
+
+  field(SCAN, "I/O Intr")
+
+  field(FLNK, "$(FRUNNING="")")
+
+  field(PRIO, "HIGH")
+
   field(TPRO, "$(TRA=0)")
 
 }
