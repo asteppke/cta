@@ -58,12 +58,14 @@ class TestSeqCtrl(unittest.TestCase):
         pvSOS.put(i+k)
         time.sleep(1)
         self.assertEqual(pvIndex.get(), k)
+        self.assertEqual(pvIsRunning.get(), 1)
+
+    print('dispatching SOS (value=' + str(self.cycles*self.length))
+    pvSOS.put(self.cycles*self.length)
+    time.sleep(1)
 
     # check final values of outputs
-    self.assertEqual(pvIndex.get(), 0)
     self.assertEqual(pvIsRunning.get(), 0)
-    self.assertEqual(pvLoad.get(), 0)
-    self.assertEqual(pvSOP.get(), 0)
 
 #    # start series
 #    time.sleep(5)

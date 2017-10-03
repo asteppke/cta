@@ -1,0 +1,95 @@
+##
+# mandatory macros
+#   P       Prefix to build record name
+#   LENGTH  Number of elements in series
+# optional macros
+#   TRA     Record processing tracing enable/disable
+#   FLOAD   Forward load processing to another -Load record
+#   FINDEX  Forward index to another -Index record
+#   FENABLE Forward enable config to other enable record
+
+#                       ------------------------
+# P-Data-I (waveform) --|    P-IsEnabled_      | -- P-Data-O (sel)
+#                       |    P-Play_           |
+# P-Load-I (fanout) ----|    P-Pick_           |
+#                       |                      |
+# P-Index-I (dfanout) --|                      |
+#                       |                      |
+# P-Enable-I (dfanout) -|                      |
+#                       ------------------------
+
+record(waveform, "$(P)-Data-I") {
+  field(NELM, "$(LENGTH)")
+  field(FTVL, "LONG")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(fanout, "$(P)-Load-I") {
+
+  field(SELM, "All")
+
+  field(LNK1, "$(P)-Play_")
+  field(LNK2, "$(FLOAD="")")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(dfanout, "$(P)-Index-I") {
+
+  field(OUTA, "$(P)-Pick_.INDX PP")
+  field(OUTB, "$(FINDEX="")")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(dfanout, "$(P)-Enable-I") {
+
+  field(OUTA, "$(P)-IsEnabled_ PP")
+  field(OUTB, "$(FENABLE="")")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(bo, "$(P)-IsEnabled_") {
+
+  field(VAL, "0")
+
+  field(FLNK, "$(P)-Data-O")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(waveform, "$(P)-Play_") {
+
+  field(NELM, "$(LENGTH)")
+  field(FTVL, "LONG")
+
+  field(INP, "$(P)-Data-I")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(subArray, "$(P)-Pick_") {
+
+  field(INP, "$(P)-Play_.VAL")
+
+  field(MALM, "$(LENGTH)")
+  field(NELM, "1")
+  field(FTVL, "LONG")
+
+  field(FLNK, "$(P)-Data-O")
+
+  field(TPRO, "$(TRA=0)")
+}
+
+record(sel, "$(P)-Data-O") {
+
+  field(INPA, "0")
+  field(INPB, "$(P)-Pick_")
+
+  field(NVL, "$(P)-IsEnabled_")
+
+  field(TPRO, "$(TRA=0)")
+}
+

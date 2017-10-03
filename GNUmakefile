@@ -13,7 +13,11 @@ SOURCES += seqCtrl/seqCtrl.c
 
 DBDS += seqCtrl/seqCtrl.dbd
 
+TEMPLATES += cta.template
+TEMPLATES += cta.db
 TEMPLATES += seqCtrl/seqCtrl.db
+TEMPLATES += series/series.db
+TEMPLATES += superposition.db
 
 ifeq (spy, $(CONF))
 	CFLAGS += -DQ_SPY

@@ -67,6 +67,8 @@ record(longin, "$(P)Index-O") {
 
   field(SCAN, "I/O Intr")
 
+  field(PRIO, "HIGH")
+
   field(TPRO, "$(TRA=0)")
 
 }

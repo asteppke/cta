@@ -1,0 +1,8 @@
+##
+
+epicsEnvSet SYS MTEST-PC-BY84
+
+require cta
+
+dbLoadRecords("series/series.db", "P=$(SYS)-CTA:ser0, LENGTH=8, TRA=1")
+
