@@ -84,9 +84,9 @@ me-&gt;length = GetLength();</entry>
        <entry brief="SeqCtrl_SetLoad(0);">SeqCtrl_SetLoad(0);</entry>
        <tran trig="STEP">
         <choice target="../../../3">
-         <guard brief="(length != 0) &amp;&amp; (cycles != 0)">(me-&gt;length != 0) &amp;&amp; (me-&gt;cycles != 0)</guard>
+         <guard brief="(length &gt; 0) &amp;&amp; (cycles &gt;= 0)">(me-&gt;length &gt; 0) &amp;&amp; (me-&gt;cycles &gt;= 0)</guard>
          <choice_glyph conn="79,46,4,0,5">
-          <action box="1,0,27,3"/>
+          <action box="1,0,20,3"/>
          </choice_glyph>
         </choice>
         <tran_glyph conn="79,41,2,-1,5">
@@ -106,9 +106,9 @@ if (me-&gt;index &gt;= me-&gt;length) {
 }</entry>
        <tran trig="STEP">
         <choice target="../..">
-         <guard brief="count &lt; cycles">me-&gt;count &lt; me-&gt;cycles</guard>
-         <choice_glyph conn="96,68,5,2,-14,-6">
-          <action box="-13,-4,12,3"/>
+         <guard brief="(cycles == 0) || (count &lt; cycles)">(me-&gt;cycles == 0) || (me-&gt;count &lt; me-&gt;cycles)</guard>
+         <choice_glyph conn="96,68,5,2,-36,-6">
+          <action box="-35,-3,23,2"/>
          </choice_glyph>
         </choice>
         <tran_glyph conn="90,57,1,-1,6,11">
