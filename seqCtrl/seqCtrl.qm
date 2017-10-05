@@ -56,7 +56,7 @@ QACTIVE_POST_LIFO(AO_SeqCtrl, evt);
 me-&gt;count = 0;
 me-&gt;length = 0;
 me-&gt;cycles = 0;</entry>
-      <tran trig="START" target="../../3/1">
+      <tran trig="START" target="../../3/2">
        <tran_glyph conn="36,26,1,3,14">
         <action box="1,-2,19,2"/>
        </tran_glyph>
@@ -75,17 +75,16 @@ me-&gt;length = GetLength();</entry>
         <action box="-5,-2,5,2"/>
        </tran_glyph>
       </tran>
+      <tran trig="STEP" target="../../2">
+       <tran_glyph conn="47,58,3,2,-33,-21">
+        <action box="-12,-3,10,2"/>
+       </tran_glyph>
+      </tran>
       <state name="init">
        <entry brief="SeqCtrl_SetLoad(0);">SeqCtrl_SetLoad(0);</entry>
        <tran trig="STEP">
-        <choice target="../../../../2">
-         <guard brief="length == 0 || cycles == 0">me-&gt;length == 0 || me-&gt;cycles == 0</guard>
-         <choice_glyph conn="79,46,5,2,-57,-9">
-          <action box="-31,-3,18,3"/>
-         </choice_glyph>
-        </choice>
-        <choice target="../../../2">
-         <guard brief="else"/>
+        <choice target="../../../3">
+         <guard brief="(length != 0) &amp;&amp; (cycles != 0)">(me-&gt;length != 0) &amp;&amp; (me-&gt;cycles != 0)</guard>
          <choice_glyph conn="79,46,4,0,5">
           <action box="1,0,27,3"/>
          </choice_glyph>
@@ -99,51 +98,28 @@ me-&gt;length = GetLength();</entry>
        </state_glyph>
       </state>
       <state name="play">
-       <entry brief="SeqCtrl_SetIndex(index); index++;">SeqCtrl_SetIndex(me-&gt;index);
-me-&gt;index++;</entry>
+       <entry brief="SeqCtrl_SetIndex(index); index++; if (index &gt;= length) {index = 0; count++;}">SeqCtrl_SetIndex(me-&gt;index);
+me-&gt;index++;
+if (me-&gt;index &gt;= me-&gt;length) {
+  me-&gt;index = 0;
+  me-&gt;count++;
+}</entry>
        <tran trig="STEP">
-        <choice target="../../../../2">
-         <guard brief="count &gt;= cycles">me-&gt;count &gt;= me-&gt;cycles</guard>
-         <choice_glyph conn="96,72,4,2,7,-79,-42">
-          <action box="1,2,10,2"/>
+        <choice target="../..">
+         <guard brief="count &lt; cycles">me-&gt;count &lt; me-&gt;cycles</guard>
+         <choice_glyph conn="96,68,5,2,-14,-6">
+          <action box="-13,-4,12,3"/>
          </choice_glyph>
         </choice>
-        <choice>
-         <guard brief="else"/>
-         <choice target="../../..">
-          <guard brief="index &gt;= length">me-&gt;index &gt;= me-&gt;length</guard>
-          <action brief="index = 0;">me-&gt;index = 0;
-</action>
-          <choice_glyph conn="86,72,4,2,5,-34,-15">
-           <action box="-33,2,26,3"/>
-          </choice_glyph>
-         </choice>
-         <choice target="../../..">
-          <guard brief="index == (length - 1)">me-&gt;index == (me-&gt;length - 1)</guard>
-          <action brief="count++">me-&gt;count++;</action>
-          <choice_glyph conn="86,72,5,2,-30,-10">
-           <action box="-29,-3,22,2"/>
-          </choice_glyph>
-         </choice>
-         <choice target="../../..">
-          <guard brief="else"/>
-          <choice_glyph conn="86,72,4,2,-10">
-           <action box="1,-8,7,2"/>
-          </choice_glyph>
-         </choice>
-         <choice_glyph conn="96,72,5,-1,-10">
-          <action box="-6,-3,6,2"/>
-         </choice_glyph>
-        </choice>
-        <tran_glyph conn="90,57,1,-1,6,15">
-         <action box="0,-2,29,3"/>
+        <tran_glyph conn="90,57,1,-1,6,11">
+         <action box="0,-2,8,3"/>
         </tran_glyph>
        </tran>
        <state_glyph node="50,51,40,11">
-        <entry box="1,2,28,3"/>
+        <entry box="1,2,37,5"/>
        </state_glyph>
       </state>
-      <state_glyph node="47,14,61,70">
+      <state_glyph node="47,14,61,58">
        <entry box="1,2,49,2"/>
        <exit box="1,4,36,2"/>
       </state_glyph>
