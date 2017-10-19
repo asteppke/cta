@@ -6,11 +6,20 @@
 #
 # optional macros
 # ---------------
+# LEN = 2048
 # TR = 0
+
+# cta -------------------------------------------------------------------------
+#
+# cta.db provided the records to glue all the elements together.
 
 file cta.db {
   {P="$(SYS)-$(CTA):"}
 }
+
+# sequence definition ---------------------------------------------------------
+#
+# Each sequence consists of a number of series and a sequence controller.
 
 ## sequence 0 --------------------------
 file seqCtrl.db {
@@ -20,40 +29,37 @@ file seqCtrl.db {
 }
 file series.db {
   pattern
-  {P,                        LENGTH, FINDEX,                              FLOAD,                           FENABLE}
-  {"$(SYS)-$(CTA):seq0Ser0", "8",    "$(SYS)-$(CTA):seq0Ser1-Index-I PP", "$(SYS)-$(CTA):seq0Ser1-Load-I", "$(SYS)-$(CTA):seq0Ser1-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser1", "8",    "$(SYS)-$(CTA):seq0Ser2-Index-I PP", "$(SYS)-$(CTA):seq0Ser2-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser2", "8",    "",                                ""                               }
+  {P,                         LENGTH,        FINDEX,                               FLOAD,                            FENABLE}
+  {"$(SYS)-$(CTA):seq0Ser0",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser1-Index-I PP",  "$(SYS)-$(CTA):seq0Ser1-Load-I",  "$(SYS)-$(CTA):seq0Ser1-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser1",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser2-Index-I PP",  "$(SYS)-$(CTA):seq0Ser2-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser2",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser3-Index-I PP",  "$(SYS)-$(CTA):seq0Ser3-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser3",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser4-Index-I PP",  "$(SYS)-$(CTA):seq0Ser4-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser4",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser5-Index-I PP",  "$(SYS)-$(CTA):seq0Ser5-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser5",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser6-Index-I PP",  "$(SYS)-$(CTA):seq0Ser6-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser6",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser7-Index-I PP",  "$(SYS)-$(CTA):seq0Ser7-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser7",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser8-Index-I PP",  "$(SYS)-$(CTA):seq0Ser8-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser8",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser9-Index-I PP",  "$(SYS)-$(CTA):seq0Ser9-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser9",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser10-Index-I PP", "$(SYS)-$(CTA):seq0Ser10-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser10", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser11-Index-I PP", "$(SYS)-$(CTA):seq0Ser11-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser11", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser12-Index-I PP", "$(SYS)-$(CTA):seq0Ser12-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser12", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser13-Index-I PP", "$(SYS)-$(CTA):seq0Ser13-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser13", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser14-Index-I PP", "$(SYS)-$(CTA):seq0Ser14-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser14", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser15-Index-I PP", "$(SYS)-$(CTA):seq0Ser15-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser15", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser16-Index-I PP", "$(SYS)-$(CTA):seq0Ser16-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser16", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser17-Index-I PP", "$(SYS)-$(CTA):seq0Ser17-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser17", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser18-Index-I PP", "$(SYS)-$(CTA):seq0Ser18-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser18", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser19-Index-I PP", "$(SYS)-$(CTA):seq0Ser19-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser19", "$(LEN=2048)", "",                                   "",                               ""                                  }
 }
 
-## sequence 1 --------------------------
-#file seqCtrl.db {
-#  pattern
-#  {P,                FLOAD,                     FINDEX}
-#  {"$(SYS)-$(CTA):seq1", "$(SYS)-$(CTA):seq1Ser0-Load", "$(SYS)-$(CTA):seq1Ser0-Index"}
-#}
-#file series.db {
-#  pattern
-#  {P,                    LENGTH, FINDEX,                        FLOAD                    }
-#  {"$(SYS)-$(CTA):seq1Ser0", "8",    "$(SYS)-$(CTA):seq1Ser1-Index PP", "$(SYS)-$(CTA):seq1Ser1-Load"}
-#  {"$(SYS)-$(CTA):seq1Ser1", "8",    "$(SYS)-$(CTA):seq1Ser2-Index PP", "$(SYS)-$(CTA):seq1Ser2-Load"}
-#  {"$(SYS)-$(CTA):seq1Ser2", "8",    "",                            ""                       }
-#}
-
-## sequence 2 --------------------------
-#file seqCtrl.db {
-#  pattern
-#  {P,                FLOAD,                     FINDEX}
-#  {"$(SYS)-$(CTA):seq2", "$(SYS)-$(CTA):seq2Ser0-Load", "$(SYS)-$(CTA):seq2Ser0-Index"}
-#}
-#file series.db {
-#  pattern
-#  {P,                    LENGTH, FINDEX,                        FLOAD                    }
-#  {"$(SYS)-$(CTA):seq2Ser0", "8",    "$(SYS)-$(CTA):seq2Ser1-Index PP", "$(SYS)-$(CTA):seq2Ser1-Load"}
-#  {"$(SYS)-$(CTA):seq2Ser1", "8",    "$(SYS)-$(CTA):seq2Ser2-Index PP", "$(SYS)-$(CTA):seq2Ser2-Load"}
-#  {"$(SYS)-$(CTA):seq2Ser2", "8",    "",                            ""                       }
-#}
-
+# superposition ---------------------------------------------------------------
+#
+# We use superposition.db to logically or the outputs of all sequences.
+# The output of all series 0 are ored, the output of all series 1 are ored and so on.
+#
+# The instances of superposition.db are chained together using the LNK makro.
+# So processing the first instance, processes all of them.
+#
 # sequence 0
 #    series 0 ----|          
 #    series 1 ----|------|
@@ -68,31 +74,53 @@ file series.db {
 #                 |#|    |#|    |#|
 #                 ---    ---    --- 
 #                  |      |      |
-#                  |      |      |------ superpositioned series 0
+#                  |      |      |------ superpositioned series 2
 #                  |      |------------- superpositioned series 1
-#                  |-------------------- superpositioned series 2
+#                  |-------------------- superpositioned series 0
 
 file superposition.db {
 
   pattern
-  {NAME,                    IN1,                IN2,                           OUT,                                  LNK,                TRA}
-
+  {NAME,                     IN1, IN2,                              OUT,                              LNK,                         TRA}
   # series 0
-  {$(SYS)-$(CTA):supSer0_0, "0"               , $(SYS)-$(CTA):seq0Ser0-Data-O, "$(SYS)-$(EOS):Evt-1-Ena-Sel PP",  "$(SYS)-$(CTA):supSer1_0", "$(TR=0)"} # sequence 0
-#  {$(SYS)-$(CTA):supSer0_0, "0"               , $(SYS)-$(CTA):seq0Ser0-O, "",  "$(SYS)-$(CTA):supSer0_1", "$(TR=0)"} # sequence 0
-#  {$(SYS)-$(CTA):supSer0_1, "$(SYS)-$(CTA):supSer0_0", $(SYS)-$(CTA):seq1Ser0-O, "",  "$(SYS)-$(CTA):supSer0_2", "$(TR=0)"} # sequence 1
-#  {$(SYS)-$(CTA):supSer0_2, "$(SYS)-$(CTA):supSer0_1", $(SYS)-$(CTA):seq2Ser0-O, "",  "",                 "$(TR=0)"} # sequence 2
-#
-#  # series 1
-  {$(SYS)-$(CTA):supSer1_0, "0"               , $(SYS)-$(CTA):seq0Ser1-Data-O, "$(SYS)-$(EOS):Evt-2-Ena-Sel PP",  "$(SYS)-$(CTA):supSer2_0", "$(TR=0)"} # sequence 0
-#  {$(SYS)-$(CTA):supSer1_0, "0"               , $(SYS)-$(CTA):seq0Ser1-O, "",  "$(SYS)-$(CTA):supSer1_1", "$(TR=0)"} # sequence 0
-#  {$(SYS)-$(CTA):supSer1_1, "$(SYS)-$(CTA):supSer1_0", $(SYS)-$(CTA):seq1Ser1-O, "",  "$(SYS)-$(CTA):supSer1_2", "$(TR=0)"} # sequence 1
-#  {$(SYS)-$(CTA):supSer1_2, "$(SYS)-$(CTA):supSer1_1", $(SYS)-$(CTA):seq2Ser1-O, "",  "",                 "$(TR=0)"} # sequence 2
-#
-#  # series 2
-  {$(SYS)-$(CTA):supSer2_0, "0"               , $(SYS)-$(CTA):seq0Ser2-Data-O, "$(SYS)-$(EOS):Evt-3-Ena-Sel PP",  "", "$(TR=0)"} # sequence 0
-#  {$(SYS)-$(CTA):supSer2_0, "0"               , $(SYS)-$(CTA):seq0Ser2-O, "",  "$(SYS)-$(CTA):supSer2_1", "$(TR=0)"} # sequence 0
-#  {$(SYS)-$(CTA):supSer2_1, "$(SYS)-$(CTA):supSer2_0", $(SYS)-$(CTA):seq1Ser2-O, "",  "$(SYS)-$(CTA):supSer2_2", "$(TR=0)"} # sequence 1
-#  {$(SYS)-$(CTA):supSer2_2, "$(SYS)-$(CTA):supSer2_1", $(SYS)-$(CTA):seq2Ser2-O, "",  "",                 "$(TR=0)"} # sequence 2
+  {$(SYS)-$(CTA):supSer0_0,  "0", "$(SYS)-$(CTA):seq0Ser0-Data-O",  "$(SYS)-$(EOS):Evt-1-Ena-Sel PP",  "$(SYS)-$(CTA):supSer1_0",  "$(TR=0)"} # sequence 0
+  # series 1
+  {$(SYS)-$(CTA):supSer1_0,  "0", "$(SYS)-$(CTA):seq0Ser1-Data-O",  "$(SYS)-$(EOS):Evt-2-Ena-Sel PP",  "$(SYS)-$(CTA):supSer2_0",  "$(TR=0)"} # sequence 0
+  # series 2
+  {$(SYS)-$(CTA):supSer2_0,  "0", "$(SYS)-$(CTA):seq0Ser2-Data-O",  "$(SYS)-$(EOS):Evt-3-Ena-Sel PP",  "$(SYS)-$(CTA):supSer3_0",  "$(TR=0)"} # sequence 0
+  # series 3
+  {$(SYS)-$(CTA):supSer3_0,  "0", "$(SYS)-$(CTA):seq0Ser3-Data-O",  "$(SYS)-$(EOS):Evt-4-Ena-Sel PP",  "$(SYS)-$(CTA):supSer4_0",  "$(TR=0)"} # sequence 0
+  # series 4
+  {$(SYS)-$(CTA):supSer4_0,  "0", "$(SYS)-$(CTA):seq0Ser4-Data-O",  "$(SYS)-$(EOS):Evt-5-Ena-Sel PP",  "$(SYS)-$(CTA):supSer5_0",  "$(TR=0)"} # sequence 0
+  # series 5
+  {$(SYS)-$(CTA):supSer5_0,  "0", "$(SYS)-$(CTA):seq0Ser5-Data-O",  "$(SYS)-$(EOS):Evt-6-Ena-Sel PP",  "$(SYS)-$(CTA):supSer6_0",  "$(TR=0)"} # sequence 0
+  # series 6
+  {$(SYS)-$(CTA):supSer6_0,  "0", "$(SYS)-$(CTA):seq0Ser6-Data-O",  "$(SYS)-$(EOS):Evt-7-Ena-Sel PP",  "$(SYS)-$(CTA):supSer7_0",  "$(TR=0)"} # sequence 0
+  # series 7
+  {$(SYS)-$(CTA):supSer7_0,  "0", "$(SYS)-$(CTA):seq0Ser7-Data-O",  "$(SYS)-$(EOS):Evt-8-Ena-Sel PP",  "$(SYS)-$(CTA):supSer8_0",  "$(TR=0)"} # sequence 0
+  # series 8
+  {$(SYS)-$(CTA):supSer8_0,  "0", "$(SYS)-$(CTA):seq0Ser8-Data-O",  "$(SYS)-$(EOS):Evt-9-Ena-Sel PP",  "$(SYS)-$(CTA):supSer9_0",  "$(TR=0)"} # sequence 0
+  # series 9
+  {$(SYS)-$(CTA):supSer9_0,  "0", "$(SYS)-$(CTA):seq0Ser9-Data-O",  "$(SYS)-$(EOS):Evt-10-Ena-Sel PP", "$(SYS)-$(CTA):supSer10_0", "$(TR=0)"} # sequence 0
+  # series 10
+  {$(SYS)-$(CTA):supSer10_0, "0", "$(SYS)-$(CTA):seq0Ser10-Data-O", "$(SYS)-$(EOS):Evt-11-Ena-Sel PP", "$(SYS)-$(CTA):supSer11_0", "$(TR=0)"} # sequence 0
+  # series 11
+  {$(SYS)-$(CTA):supSer11_0, "0", "$(SYS)-$(CTA):seq0Ser11-Data-O", "$(SYS)-$(EOS):Evt-12-Ena-Sel PP", "$(SYS)-$(CTA):supSer12_0", "$(TR=0)"} # sequence 0
+  # series 12
+  {$(SYS)-$(CTA):supSer12_0, "0", "$(SYS)-$(CTA):seq0Ser12-Data-O", "$(SYS)-$(EOS):Evt-13-Ena-Sel PP", "$(SYS)-$(CTA):supSer13_0", "$(TR=0)"} # sequence 0
+  # series 13
+  {$(SYS)-$(CTA):supSer13_0, "0", "$(SYS)-$(CTA):seq0Ser13-Data-O", "$(SYS)-$(EOS):Evt-14-Ena-Sel PP", "$(SYS)-$(CTA):supSer14_0", "$(TR=0)"} # sequence 0
+  # series 14
+  {$(SYS)-$(CTA):supSer14_0, "0", "$(SYS)-$(CTA):seq0Ser14-Data-O", "$(SYS)-$(EOS):Evt-15-Ena-Sel PP", "$(SYS)-$(CTA):supSer15_0", "$(TR=0)"} # sequence 0
+  # series 15
+  {$(SYS)-$(CTA):supSer15_0, "0", "$(SYS)-$(CTA):seq0Ser15-Data-O", "$(SYS)-$(EOS):Evt-16-Ena-Sel PP", "$(SYS)-$(CTA):supSer16_0", "$(TR=0)"} # sequence 0
+  # series 16
+  {$(SYS)-$(CTA):supSer16_0, "0", "$(SYS)-$(CTA):seq0Ser16-Data-O", "$(SYS)-$(EOS):Evt-17-Ena-Sel PP", "$(SYS)-$(CTA):supSer17_0", "$(TR=0)"} # sequence 0
+  # series 17
+  {$(SYS)-$(CTA):supSer17_0, "0", "$(SYS)-$(CTA):seq0Ser17-Data-O", "$(SYS)-$(EOS):Evt-18-Ena-Sel PP", "$(SYS)-$(CTA):supSer18_0", "$(TR=0)"} # sequence 0
+  # series 18
+  {$(SYS)-$(CTA):supSer18_0, "0", "$(SYS)-$(CTA):seq0Ser18-Data-O", "$(SYS)-$(EOS):Evt-19-Ena-Sel PP", "$(SYS)-$(CTA):supSer19_0", "$(TR=0)"} # sequence 0
+  # series 19
+  {$(SYS)-$(CTA):supSer19_0, "0", "$(SYS)-$(CTA):seq0Ser19-Data-O", "$(SYS)-$(EOS):Evt-20-Ena-Sel PP", "",                         "$(TR=0)"} # sequence 0
 }
 
