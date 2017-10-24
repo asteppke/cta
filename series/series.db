@@ -19,6 +19,9 @@
 #                       ------------------------
 
 record(waveform, "$(P)-Data-I") {
+
+  field(PINI, "YES")
+
   field(NELM, "$(LENGTH)")
   field(FTVL, "LONG")
 

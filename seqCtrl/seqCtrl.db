@@ -44,6 +44,9 @@ record(ao, "$(P)SOS-I") {
 
 record(longout, "$(P)Length-I") {
 
+  field(PINI, "YES")
+  field(DOL, "0")
+
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S0")
 
@@ -52,6 +55,9 @@ record(longout, "$(P)Length-I") {
 }
 
 record(longout, "$(P)Cycles-I") {
+
+  field(PINI, "YES")
+  field(DOL, "1")
 
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S1")
