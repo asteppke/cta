@@ -32,23 +32,23 @@ file series.db {
   {P,                         LENGTH,        FINDEX,                               FLOAD,                            FENABLE}
   {"$(SYS)-$(CTA):seq0Ser0",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser1-Index-I PP",  "$(SYS)-$(CTA):seq0Ser1-Load-I",  "$(SYS)-$(CTA):seq0Ser1-Enable-I PP"}
   {"$(SYS)-$(CTA):seq0Ser1",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser2-Index-I PP",  "$(SYS)-$(CTA):seq0Ser2-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser2",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser3-Index-I PP",  "$(SYS)-$(CTA):seq0Ser3-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser3",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser4-Index-I PP",  "$(SYS)-$(CTA):seq0Ser4-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser4",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser5-Index-I PP",  "$(SYS)-$(CTA):seq0Ser5-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser5",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser6-Index-I PP",  "$(SYS)-$(CTA):seq0Ser6-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser6",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser7-Index-I PP",  "$(SYS)-$(CTA):seq0Ser7-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser7",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser8-Index-I PP",  "$(SYS)-$(CTA):seq0Ser8-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser8",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser9-Index-I PP",  "$(SYS)-$(CTA):seq0Ser9-Load-I",  "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser9",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser10-Index-I PP", "$(SYS)-$(CTA):seq0Ser10-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser10", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser11-Index-I PP", "$(SYS)-$(CTA):seq0Ser11-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser11", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser12-Index-I PP", "$(SYS)-$(CTA):seq0Ser12-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser12", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser13-Index-I PP", "$(SYS)-$(CTA):seq0Ser13-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser13", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser14-Index-I PP", "$(SYS)-$(CTA):seq0Ser14-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser14", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser15-Index-I PP", "$(SYS)-$(CTA):seq0Ser15-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser15", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser16-Index-I PP", "$(SYS)-$(CTA):seq0Ser16-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser16", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser17-Index-I PP", "$(SYS)-$(CTA):seq0Ser17-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser17", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser18-Index-I PP", "$(SYS)-$(CTA):seq0Ser18-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
-  {"$(SYS)-$(CTA):seq0Ser18", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser19-Index-I PP", "$(SYS)-$(CTA):seq0Ser19-Load-I", "$(SYS)-$(CTA):seq0Ser2-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser2",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser3-Index-I PP",  "$(SYS)-$(CTA):seq0Ser3-Load-I",  "$(SYS)-$(CTA):seq0Ser3-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser3",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser4-Index-I PP",  "$(SYS)-$(CTA):seq0Ser4-Load-I",  "$(SYS)-$(CTA):seq0Ser4-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser4",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser5-Index-I PP",  "$(SYS)-$(CTA):seq0Ser5-Load-I",  "$(SYS)-$(CTA):seq0Ser5-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser5",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser6-Index-I PP",  "$(SYS)-$(CTA):seq0Ser6-Load-I",  "$(SYS)-$(CTA):seq0Ser6-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser6",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser7-Index-I PP",  "$(SYS)-$(CTA):seq0Ser7-Load-I",  "$(SYS)-$(CTA):seq0Ser7-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser7",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser8-Index-I PP",  "$(SYS)-$(CTA):seq0Ser8-Load-I",  "$(SYS)-$(CTA):seq0Ser8-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser8",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser9-Index-I PP",  "$(SYS)-$(CTA):seq0Ser9-Load-I",  "$(SYS)-$(CTA):seq0Ser9-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser9",  "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser10-Index-I PP", "$(SYS)-$(CTA):seq0Ser10-Load-I", "$(SYS)-$(CTA):seq0Ser10-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser10", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser11-Index-I PP", "$(SYS)-$(CTA):seq0Ser11-Load-I", "$(SYS)-$(CTA):seq0Ser11-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser11", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser12-Index-I PP", "$(SYS)-$(CTA):seq0Ser12-Load-I", "$(SYS)-$(CTA):seq0Ser12-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser12", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser13-Index-I PP", "$(SYS)-$(CTA):seq0Ser13-Load-I", "$(SYS)-$(CTA):seq0Ser13-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser13", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser14-Index-I PP", "$(SYS)-$(CTA):seq0Ser14-Load-I", "$(SYS)-$(CTA):seq0Ser14-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser14", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser15-Index-I PP", "$(SYS)-$(CTA):seq0Ser15-Load-I", "$(SYS)-$(CTA):seq0Ser15-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser15", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser16-Index-I PP", "$(SYS)-$(CTA):seq0Ser16-Load-I", "$(SYS)-$(CTA):seq0Ser16-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser16", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser17-Index-I PP", "$(SYS)-$(CTA):seq0Ser17-Load-I", "$(SYS)-$(CTA):seq0Ser17-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser17", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser18-Index-I PP", "$(SYS)-$(CTA):seq0Ser18-Load-I", "$(SYS)-$(CTA):seq0Ser18-Enable-I PP"}
+  {"$(SYS)-$(CTA):seq0Ser18", "$(LEN=2048)", "$(SYS)-$(CTA):seq0Ser19-Index-I PP", "$(SYS)-$(CTA):seq0Ser19-Load-I", "$(SYS)-$(CTA):seq0Ser19-Enable-I PP"}
   {"$(SYS)-$(CTA):seq0Ser19", "$(LEN=2048)", "",                                   "",                               ""                                  }
 }
 
