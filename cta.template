@@ -14,7 +14,7 @@
 # cta.db provided the records to glue all the elements together.
 
 file cta.db {
-  {P="$(SYS)-$(CTA):"}
+  {P="$(SYS)-$(CTA):", LENGTH="$(LEN=2048)"}
 }
 
 # sequence definition ---------------------------------------------------------

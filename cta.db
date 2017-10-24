@@ -1,4 +1,7 @@
-#
+# mandatory macros
+# ----------------
+# P
+# LENGTH
 
 record(bi, "$(P)SOS1") {
 
@@ -90,5 +93,15 @@ record(fanout, "$(P)Seq2Trig") {
   field(LNK1, "$(SYS)-$(EOS):Seq2-FOUT_")
 
   field(TPRO, "$(TRA=0)")
+}
+
+record(longin, "$(P)SerMaxLen") {
+
+  field(PINI, "YES")
+
+  field(INP, "$(LENGTH)")
+
+  field(TPRO, "$(TRA=0)")
+
 }
 
