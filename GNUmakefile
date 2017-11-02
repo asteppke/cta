@@ -22,7 +22,5 @@ TEMPLATES += superposition.db
 ifeq (spy, $(CONF))
 	CFLAGS += -DQ_SPY
   qpc_VERSION = spy
-else
-  qpc_VERSION = dbg
 endif
 
