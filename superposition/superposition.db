@@ -1,4 +1,13 @@
-##
+#
+# mandatory macros:
+#  NAME -> name of superposition record
+#  IN1  -> PV to read value A from
+#  IN2  -> PV to read value B from
+#  OUT  -> PV to write result to
+#  LNK  -> PV to process next
+#
+# optional macros:
+#  TRA -> used to enable/disable processing (default=disabled)
 
 record(calcout, "$(NAME)") {
   field(INPA, "$(IN1)")
