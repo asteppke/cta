@@ -80,7 +80,7 @@ record(fanout, "$(P)Seq1Trig") {
   field(DISV, "2")
   field(SDIS, "$(P)CurrSeq")
 
-  field(LNK1, "$(SYS)-$(EOS):Seq1-FOUT_")
+  field(LNK1, "$(SYS)-$(EOS):Seq1-Do-I")
 
   field(TPRO, "$(TRA=0)")
 }
@@ -90,7 +90,7 @@ record(fanout, "$(P)Seq2Trig") {
   field(DISV, "1")
   field(SDIS, "$(P)CurrSeq")
 
-  field(LNK1, "$(SYS)-$(EOS):Seq2-FOUT_")
+  field(LNK1, "$(SYS)-$(EOS):Seq2-Do-I")
 
   field(TPRO, "$(TRA=0)")
 }
