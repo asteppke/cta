@@ -1,21 +1,12 @@
 ##
 # Mandatory macros
-# ----------------
-# P
-# FLOAD
-# FINDEX
+#  P      -> used as prefix for all record names
+#  FLOAD  -> used to forward load command
+#  FINDEX -> used to forward index command
 #
 # Optional macros
-# ---------------
-# TRA (default=0)
-
-#record(bi, "$(P)SOS-Trigger") {
-#  field(DTYP, "EVG START OF SEQ")
-#  field(INP,  "#C S1 @EVG0")
-#  field(SCAN, "I/O Intr")
-#  field(FLNK, "$(P)SOS-I")
-#  field(PRIO, "HIGH")
-#}
+#  FRUNNING -> used to forward running command (default="")
+#  TRA      -> used to control tracing (default=0)
 
 record(bo, "$(P)Start-I") {
 
