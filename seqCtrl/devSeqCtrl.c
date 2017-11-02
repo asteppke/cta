@@ -24,13 +24,13 @@
 static int devSeqCtrlTraceLevel = TRACE_LEVEL_NONE;
 static TracePoint tp = {&devSeqCtrlTraceLevel, "devSeqCtrl"};
 
-/********** analog output **********/
+/*********** analog output ************/
 
 /* forward declarations */
 long DevSeqCtrlInitAo(aoRecord *record);
 long DevSeqCtrlWriteAo(aoRecord *record);
 
-/* device support for ao */
+/* dset */
 struct {
   long number;
   DEVSUPFUN report;
@@ -50,63 +50,16 @@ struct {
 };
 epicsExportAddress(dset, DevSeqCtrlAo);
 
+/* init */
 long DevSeqCtrlInitAo(aoRecord *record) {
-  #if 0
-  SedePrivate *priv;
-  epicsUInt16 initval;
-  SedeCard *card;
-  int signal;
-  #endif
 
   TRACE_INFO(tp, ("%s: running for record %s", __func__, record->name));
-
-#if 0
-  /* check arguments */
-  if (record->out.type != VME_IO) {
-    errlogSevPrintf(errlogFatal, "DevSeqCtrlInitAo %s: illegal OUT link type\n"
-        , record->name);
-    return -1;
-  }
-  signal = record->out.value.vmeio.signal;
-  if (signal < 0 || signal >= 8) {
-    errlogSevPrintf(errlogFatal, "DevSeqCtrlInitAo %s: invalid signal number "
-        "%d\n", record->name, signal);
-    return S_dev_badSignalNumber;
-  }
-
-  /* open */
-  card = SedeOpen(record->out.value.vmeio.card);
-  if (!card) {
-    errlogSevPrintf(errlogFatal,
-        "DevSeqCtrlInitAo %s: invalid card number %i\n",
-        record->name, record->out.value.vmeio.card);
-    return S_dev_noDevice;
-  }
-
-  /* alloc memory */
-  priv = (SedePrivate *) malloc(sizeof(SedePrivate));
-  if (!priv) {
-    errlogSevPrintf(errlogFatal, "DevSeqCtrlInitAo %s: out of memory\n",
-        record->name);
-    return S_dev_noMemory;
-  }
-  priv->card = card;
-  priv->signal = signal;
-  record->dpvt = priv;
-
-  /* init */
-  DevSeqCtrlLinconvAo(record, TRUE);
-  SedeGet(card, signal, &initval);
-  record->rval = (epicsInt32) initval;
-
-#endif
 
   return 0;
 }
 
-/*---------------------------------------------------------------------------*/
+/* write */
 long DevSeqCtrlWriteAo(aoRecord *record) {
-  /* SedePrivate *priv = (SedePrivate *) record->dpvt; */
   int status = 0;
   StartOfSeq *evt = NULL;
 
@@ -119,36 +72,16 @@ long DevSeqCtrlWriteAo(aoRecord *record) {
   evt->pulse_id = (uint64_t) record->val;
   QACTIVE_POST(AO_SeqCtrl, &evt->super, NULL);
 
-  #if 0
-  /* check for init */
-  if (!priv) {
-    recGblSetSevr(record, UDF_ALARM, INVALID_ALARM);
-    errlogSevPrintf(errlogFatal, "DevSeqCtrlWriteAo %s: record not initialized "
-        "correctly\n", record->name);
-    return -1;
-  }
-
-  /* write */
-  status = SedeSet(priv->card, priv->signal, (epicsUInt16) record->rval);
-  if (status) {
-    errlogSevPrintf(errlogFatal, "DevSeqCtrlWriteAo %s: SedeSet failed: error "
-        "code 0x%x\n", record->name, status);
-    recGblSetSevr(record, WRITE_ALARM, INVALID_ALARM);
-  }
-
-
-  #endif
-
   return status;
 }
 
-/************************************** longout *******************************/
+/************** longout ***************/
 
 /* forward declarations */
 long devSeqCtrlInitLongout(longoutRecord *record);
 long devSeqCtrlWriteLongout(longoutRecord *record);
 
-/* device support for longout */
+/* dset */
 struct {
   long number;
   DEVSUPFUN report;
@@ -166,7 +99,7 @@ struct {
 };
 epicsExportAddress(dset, DevSeqCtrlLongout);
 
-/*---------------------------------------------------------------------------*/
+/* init */
 long devSeqCtrlInitLongout(longoutRecord *record) {
 
   TRACE_INFO(tp, ("%s: running for record %s", __func__, record->name));
@@ -181,7 +114,7 @@ long devSeqCtrlInitLongout(longoutRecord *record) {
   return 0;
 }
 
-/*---------------------------------------------------------------------------*/
+/* write */
 long devSeqCtrlWriteLongout(longoutRecord *record) {
   int status = 0;
 
@@ -205,8 +138,7 @@ long devSeqCtrlWriteLongout(longoutRecord *record) {
   return status;
 }
 
-
-/************************************** longin ********************************/
+/*************** longin ***************/
 
 /* forward declarations */
 long devSeqCtrlInitLongin(longinRecord *record);
@@ -250,7 +182,7 @@ void SeqCtrl_SetIsRunning(long is_running) {
   scanIoRequest(s_longin_glue[3].sio);
 }
 
-/* device support for longin */
+/* dset */
 struct {
   long number;
   DEVSUPFUN report;
@@ -268,7 +200,7 @@ struct {
 };
 epicsExportAddress(dset, DevSeqCtrlLongin);
 
-/*---------------------------------------------------------------------------*/
+/* init */
 long devSeqCtrlInitLongin(longinRecord *record) {
   LonginPriv *priv = NULL;
 
@@ -330,7 +262,7 @@ long devSeqCtrlInitLongin(longinRecord *record) {
   return 0;
 }
 
-/*----------------------------------------------------------------------------*/
+/* read */
 long devSeqCtrlReadLongin(longinRecord *record) {
   int status = 0;
   LonginPriv *priv = (LonginPriv *) record->dpvt;
@@ -352,7 +284,7 @@ long devSeqCtrlReadLongin(longinRecord *record) {
   return status;
 }
 
-/*----------------------------------------------------------------------------*/
+/* iointifo */
 long  devSeqCtrlGetIointInfo(int cmd, struct dbCommon* com, IOSCANPVT *iospvt) {
   LonginPriv *priv = (LonginPriv *) com->dpvt;
 
@@ -372,7 +304,7 @@ long  devSeqCtrlGetIointInfo(int cmd, struct dbCommon* com, IOSCANPVT *iospvt) {
   return 0;
 }
 
-/************************************** bo ************************************/
+/**************** bo ******************/
 
 /* forward declarations */
 long devSeqCtrlInitBo(boRecord *record);
@@ -396,7 +328,7 @@ struct {
 };
 epicsExportAddress(dset, DevSeqCtrlBo);
 
-/*---------------------------------------------------------------------------*/
+/* init */
 long devSeqCtrlInitBo(boRecord *record) {
   const char *param = NULL;
 
@@ -423,7 +355,7 @@ long devSeqCtrlInitBo(boRecord *record) {
   return 0;
 }
 
-/*---------------------------------------------------------------------------*/
+/* write */
 long devSeqCtrlWriteBo(boRecord *record) {
   QEvent *evt = NULL;
   long signal = (long) record->dpvt;
@@ -440,7 +372,7 @@ long devSeqCtrlWriteBo(boRecord *record) {
   return 0;
 }
 
-/****************** init hooks ************************************************/
+/************* init hooks *************/
 static void DevSeqCtrlInitHook(initHookState state) {
 
   switch(state) {
@@ -470,7 +402,7 @@ static void DevSeqCtrlInitHook(initHookState state) {
 
 }
 
-/****************** iocsh functions *******************************************/
+/********** iocsh functions ***********/
 static const iocshFuncDef dev_seq_ctrl_func_def = {"devSeqCtrlInit", 0, NULL};
 
 static void DevSeqCtrlInit(const iocshArgBuf *args) {
