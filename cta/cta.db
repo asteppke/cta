@@ -1,7 +1,10 @@
-# mandatory macros
-# ----------------
-# P
-# LENGTH
+# Mandatory macros:
+# P      -> used to build prefix for record names
+# LENGTH -> max length for series
+# EOS    -> prefix used to reference EOS PVs
+#
+# Optional macros:
+#  TRA -> enable (1) or disable (0) processing tracing
 
 record(bi, "$(P)SOS1") {
 
@@ -37,7 +40,7 @@ record(calc, "$(P)CurrSeq") {
   
   field(CALC, "A ? 1 : 2")
 
-  field(FLNK, "$(SYS)-$(CTA):seq0Ctrl-SOS-I")
+  field(FLNK, "$(P)seq0Ctrl-SOS-I")
 
   field(TPRO, "$(TRA=0)")
 }
@@ -46,7 +49,7 @@ record(fanout, "$(P)Drv") {
 
   field(LNK1, "$(P)DrvSeq0")
   field(LNK2, "$(P)DrvSeq1")
-  field(LNK3, "$(SYS)-$(CTA):supSer0_0")
+  field(LNK3, "$(P)supSer0_0")
   field(LNK4, "$(P)Seq1Trig")
   field(LNK5, "$(P)Seq2Trig")
 
@@ -57,9 +60,9 @@ record(dfanout, "$(P)DrvSeq0") {
 
   field(OMSL, "closed_loop")
 
-  field(DOL, "$(SYS)-$(CTA):seq0Ctrl-IsRunning-O PP")
+  field(DOL, "$(P)seq0Ctrl-IsRunning-O PP")
 
-  field(OUTA, "$(SYS)-$(CTA):seq0Ser0-Enable-I PP")
+  field(OUTA, "$(P)seq0Ser0-Enable-I PP")
 
   field(TPRO, "$(TRA=0)")
 }
@@ -68,9 +71,9 @@ record(dfanout, "$(P)DrvSeq1") {
 
   field(OMSL, "closed_loop")
 
-  field(DOL, "$(SYS)-$(CTA):seq0Ctrl-Index-O PP")
+  field(DOL, "$(P)seq0Ctrl-Index-O PP")
 
-  field(OUTA, "$(SYS)-$(CTA):seq0Ser0-Index-I PP")
+  field(OUTA, "$(P)seq0Ser0-Index-I PP")
 
   field(TPRO, "$(TRA=0)")
 }
@@ -80,7 +83,7 @@ record(fanout, "$(P)Seq1Trig") {
   field(DISV, "2")
   field(SDIS, "$(P)CurrSeq")
 
-  field(LNK1, "$(SYS)-$(EOS):Seq1-Do-I")
+  field(LNK1, "$(EOS)Seq1-Do-I")
 
   field(TPRO, "$(TRA=0)")
 }
@@ -90,7 +93,7 @@ record(fanout, "$(P)Seq2Trig") {
   field(DISV, "1")
   field(SDIS, "$(P)CurrSeq")
 
-  field(LNK1, "$(SYS)-$(EOS):Seq2-Do-I")
+  field(LNK1, "$(EOS)Seq2-Do-I")
 
   field(TPRO, "$(TRA=0)")
 }
