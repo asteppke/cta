@@ -21,6 +21,6 @@ record(calcout, "$(NAME)") {
 
   field(FLNK, "$(LNK)")
 
-  field(TPRO, "$(TRA)")
+  field(TPRO, "$(TRA=0)")
 }
 
