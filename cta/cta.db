@@ -1,7 +1,7 @@
 # Mandatory macros:
 # P      -> used to build prefix for record names
 # LENGTH -> max length for series
-# EOS    -> prefix used to reference EOS PVs
+# EOS    -> device name used to reference EOS PVs
 #
 # Optional macros:
 #  TRA -> enable (1) or disable (0) processing tracing
@@ -83,7 +83,7 @@ record(fanout, "$(P)Seq1Trig") {
   field(DISV, "2")
   field(SDIS, "$(P)CurrSeq")
 
-  field(LNK1, "$(EOS)Seq1-Do-I")
+  field(LNK1, "$(EOS):Seq1-Do-I")
 
   field(TPRO, "$(TRA=0)")
 }
@@ -93,7 +93,7 @@ record(fanout, "$(P)Seq2Trig") {
   field(DISV, "1")
   field(SDIS, "$(P)CurrSeq")
 
-  field(LNK1, "$(EOS)Seq2-Do-I")
+  field(LNK1, "$(EOS):Seq2-Do-I")
 
   field(TPRO, "$(TRA=0)")
 }

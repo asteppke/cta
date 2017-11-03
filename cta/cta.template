@@ -3,7 +3,7 @@
 # ----------------
 # DN     -> device name
 # LENGTH -> max length for series
-# EOS    -> prefix used to reference EOS PVs
+# EOS    -> device name used to reference EOS PVs
 #
 # Optional macros:
 #  TRA -> enable (1) or disable (0) processing tracing
@@ -86,46 +86,46 @@ file series.db {
 file superposition.db {
 
   pattern
-  {NAME,             IN1, IN2,                      OUT,                       LNK,                TRA}
+  {NAME,             IN1, IN2,                      OUT,                        LNK,                TRA}
   # series 0
-  {$(DN):supSer0_0,  "0", "$(DN):seq0Ser0-Data-O",  "$(EOS)Evt-1-Ena-Sel PP",  "$(DN):supSer1_0",  "$(TR=0)"} # sequence 0
+  {$(DN):supSer0_0,  "0", "$(DN):seq0Ser0-Data-O",  "$(EOS):Evt-1-Ena-Sel PP",  "$(DN):supSer1_0",  "$(TR=0)"} # sequence 0
   # series 1
-  {$(DN):supSer1_0,  "0", "$(DN):seq0Ser1-Data-O",  "$(EOS)Evt-2-Ena-Sel PP",  "$(DN):supSer2_0",  "$(TR=0)"} # sequence 0
+  {$(DN):supSer1_0,  "0", "$(DN):seq0Ser1-Data-O",  "$(EOS):Evt-2-Ena-Sel PP",  "$(DN):supSer2_0",  "$(TR=0)"} # sequence 0
   # series 2
-  {$(DN):supSer2_0,  "0", "$(DN):seq0Ser2-Data-O",  "$(EOS)Evt-3-Ena-Sel PP",  "$(DN):supSer3_0",  "$(TR=0)"} # sequence 0
+  {$(DN):supSer2_0,  "0", "$(DN):seq0Ser2-Data-O",  "$(EOS):Evt-3-Ena-Sel PP",  "$(DN):supSer3_0",  "$(TR=0)"} # sequence 0
   # series 3
-  {$(DN):supSer3_0,  "0", "$(DN):seq0Ser3-Data-O",  "$(EOS)Evt-4-Ena-Sel PP",  "$(DN):supSer4_0",  "$(TR=0)"} # sequence 0
+  {$(DN):supSer3_0,  "0", "$(DN):seq0Ser3-Data-O",  "$(EOS):Evt-4-Ena-Sel PP",  "$(DN):supSer4_0",  "$(TR=0)"} # sequence 0
   # series 4
-  {$(DN):supSer4_0,  "0", "$(DN):seq0Ser4-Data-O",  "$(EOS)Evt-5-Ena-Sel PP",  "$(DN):supSer5_0",  "$(TR=0)"} # sequence 0
+  {$(DN):supSer4_0,  "0", "$(DN):seq0Ser4-Data-O",  "$(EOS):Evt-5-Ena-Sel PP",  "$(DN):supSer5_0",  "$(TR=0)"} # sequence 0
   # series 5
-  {$(DN):supSer5_0,  "0", "$(DN):seq0Ser5-Data-O",  "$(EOS)Evt-6-Ena-Sel PP",  "$(DN):supSer6_0",  "$(TR=0)"} # sequence 0
+  {$(DN):supSer5_0,  "0", "$(DN):seq0Ser5-Data-O",  "$(EOS):Evt-6-Ena-Sel PP",  "$(DN):supSer6_0",  "$(TR=0)"} # sequence 0
   # series 6
-  {$(DN):supSer6_0,  "0", "$(DN):seq0Ser6-Data-O",  "$(EOS)Evt-7-Ena-Sel PP",  "$(DN):supSer7_0",  "$(TR=0)"} # sequence 0
+  {$(DN):supSer6_0,  "0", "$(DN):seq0Ser6-Data-O",  "$(EOS):Evt-7-Ena-Sel PP",  "$(DN):supSer7_0",  "$(TR=0)"} # sequence 0
   # series 7
-  {$(DN):supSer7_0,  "0", "$(DN):seq0Ser7-Data-O",  "$(EOS)Evt-8-Ena-Sel PP",  "$(DN):supSer8_0",  "$(TR=0)"} # sequence 0
+  {$(DN):supSer7_0,  "0", "$(DN):seq0Ser7-Data-O",  "$(EOS):Evt-8-Ena-Sel PP",  "$(DN):supSer8_0",  "$(TR=0)"} # sequence 0
   # series 8
-  {$(DN):supSer8_0,  "0", "$(DN):seq0Ser8-Data-O",  "$(EOS)Evt-9-Ena-Sel PP",  "$(DN):supSer9_0",  "$(TR=0)"} # sequence 0
+  {$(DN):supSer8_0,  "0", "$(DN):seq0Ser8-Data-O",  "$(EOS):Evt-9-Ena-Sel PP",  "$(DN):supSer9_0",  "$(TR=0)"} # sequence 0
   # series 9
-  {$(DN):supSer9_0,  "0", "$(DN):seq0Ser9-Data-O",  "$(EOS)Evt-10-Ena-Sel PP", "$(DN):supSer10_0", "$(TR=0)"} # sequence 0
+  {$(DN):supSer9_0,  "0", "$(DN):seq0Ser9-Data-O",  "$(EOS):Evt-10-Ena-Sel PP", "$(DN):supSer10_0", "$(TR=0)"} # sequence 0
   # series 10
-  {$(DN):supSer10_0, "0", "$(DN):seq0Ser10-Data-O", "$(EOS)Evt-11-Ena-Sel PP", "$(DN):supSer11_0", "$(TR=0)"} # sequence 0
+  {$(DN):supSer10_0, "0", "$(DN):seq0Ser10-Data-O", "$(EOS):Evt-11-Ena-Sel PP", "$(DN):supSer11_0", "$(TR=0)"} # sequence 0
   # series 11
-  {$(DN):supSer11_0, "0", "$(DN):seq0Ser11-Data-O", "$(EOS)Evt-12-Ena-Sel PP", "$(DN):supSer12_0", "$(TR=0)"} # sequence 0
+  {$(DN):supSer11_0, "0", "$(DN):seq0Ser11-Data-O", "$(EOS):Evt-12-Ena-Sel PP", "$(DN):supSer12_0", "$(TR=0)"} # sequence 0
   # series 12
-  {$(DN):supSer12_0, "0", "$(DN):seq0Ser12-Data-O", "$(EOS)Evt-13-Ena-Sel PP", "$(DN):supSer13_0", "$(TR=0)"} # sequence 0
+  {$(DN):supSer12_0, "0", "$(DN):seq0Ser12-Data-O", "$(EOS):Evt-13-Ena-Sel PP", "$(DN):supSer13_0", "$(TR=0)"} # sequence 0
   # series 13
-  {$(DN):supSer13_0, "0", "$(DN):seq0Ser13-Data-O", "$(EOS)Evt-14-Ena-Sel PP", "$(DN):supSer14_0", "$(TR=0)"} # sequence 0
+  {$(DN):supSer13_0, "0", "$(DN):seq0Ser13-Data-O", "$(EOS):Evt-14-Ena-Sel PP", "$(DN):supSer14_0", "$(TR=0)"} # sequence 0
   # series 14
-  {$(DN):supSer14_0, "0", "$(DN):seq0Ser14-Data-O", "$(EOS)Evt-15-Ena-Sel PP", "$(DN):supSer15_0", "$(TR=0)"} # sequence 0
+  {$(DN):supSer14_0, "0", "$(DN):seq0Ser14-Data-O", "$(EOS):Evt-15-Ena-Sel PP", "$(DN):supSer15_0", "$(TR=0)"} # sequence 0
   # series 15
-  {$(DN):supSer15_0, "0", "$(DN):seq0Ser15-Data-O", "$(EOS)Evt-16-Ena-Sel PP", "$(DN):supSer16_0", "$(TR=0)"} # sequence 0
+  {$(DN):supSer15_0, "0", "$(DN):seq0Ser15-Data-O", "$(EOS):Evt-16-Ena-Sel PP", "$(DN):supSer16_0", "$(TR=0)"} # sequence 0
   # series 16
-  {$(DN):supSer16_0, "0", "$(DN):seq0Ser16-Data-O", "$(EOS)Evt-17-Ena-Sel PP", "$(DN):supSer17_0", "$(TR=0)"} # sequence 0
+  {$(DN):supSer16_0, "0", "$(DN):seq0Ser16-Data-O", "$(EOS):Evt-17-Ena-Sel PP", "$(DN):supSer17_0", "$(TR=0)"} # sequence 0
   # series 17
-  {$(DN):supSer17_0, "0", "$(DN):seq0Ser17-Data-O", "$(EOS)Evt-18-Ena-Sel PP", "$(DN):supSer18_0", "$(TR=0)"} # sequence 0
+  {$(DN):supSer17_0, "0", "$(DN):seq0Ser17-Data-O", "$(EOS):Evt-18-Ena-Sel PP", "$(DN):supSer18_0", "$(TR=0)"} # sequence 0
   # series 18
-  {$(DN):supSer18_0, "0", "$(DN):seq0Ser18-Data-O", "$(EOS)Evt-19-Ena-Sel PP", "$(DN):supSer19_0", "$(TR=0)"} # sequence 0
+  {$(DN):supSer18_0, "0", "$(DN):seq0Ser18-Data-O", "$(EOS):Evt-19-Ena-Sel PP", "$(DN):supSer19_0", "$(TR=0)"} # sequence 0
   # series 19
-  {$(DN):supSer19_0, "0", "$(DN):seq0Ser19-Data-O", "$(EOS)Evt-20-Ena-Sel PP", "",                "$(TR=0)"} # sequence 0
+  {$(DN):supSer19_0, "0", "$(DN):seq0Ser19-Data-O", "$(EOS):Evt-20-Ena-Sel PP", "",                "$(TR=0)"} # sequence 0
 }
 
