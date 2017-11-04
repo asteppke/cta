@@ -1,4 +1,8 @@
 
+1.0.1 2017-11-04
+  - Changed macro handling for EOS PV reference
+  - Fixed problem with hardcoded device name
+
 1.0.0 2017-11-02
   - Initial version
 
