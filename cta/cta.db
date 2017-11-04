@@ -9,7 +9,7 @@
 record(bi, "$(P)SOS1") {
 
   field(DTYP, "EVG START OF SEQ")
-  field(INP, "#C S1 @EVG1")
+  field(INP, "#C S1 @$(DEVICE)")
 
   field(SCAN, "I/O Intr")
 
@@ -23,7 +23,7 @@ record(bi, "$(P)SOS1") {
 record(bi, "$(P)SOS2") {
 
   field(DTYP, "EVG START OF SEQ")
-  field(INP, "#C S2 @EVG1")
+  field(INP, "#C S2 @$(DEVICE)")
 
   field(SCAN, "I/O Intr")
 

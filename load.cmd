@@ -1,4 +1,4 @@
 devSeqCtrlInit
 
-dbLoadTemplate("cta.template", "SYS=$(SYS), DN=$(DN), EOS=$(EOS)")
+dbLoadTemplate("cta.template", "SYS=$(SYS), DEVICE=$(DEVICE), DN=$(DN), EOS=$(EOS)")
 
