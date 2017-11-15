@@ -5,6 +5,7 @@ from epics import PV
 import numpy
 import argparse
 from enum import Enum
+import logging
 
 class SequenceState(Enum):
     EQUAL = 1
@@ -93,14 +94,14 @@ class SequenceTableModel(QAbstractTableModel):
 
     def setDataStepOff(self, index, value, role):
         
-        print('setDataStepOff() is running')
+        logging.info('setDataStepOff() is running')
         
         
         if role == Qt.EditRole:
 
             row = index.row()
             column = index.column()
-            print('row=' + str(row) + ' column=' + str(column))
+            logging.info('row=' + str(row) + ' column=' + str(column))
 
             # verify value
 
@@ -115,7 +116,7 @@ class SequenceTableModel(QAbstractTableModel):
                 if i != row:
                     sumOff += self.__sequence[i][column]
             if sumOff + value >= self.__serMaxLen:
-                print(sumOff+value)
+                logging.info(sumOff+value)
                 return False, 0, 0
             
             # set value
@@ -128,13 +129,13 @@ class SequenceTableModel(QAbstractTableModel):
             
     def setDataStartOff(self, index, value, role):
         
-        print('setDataStartOff() is running')
+        logging.info('setDataStartOff() is running')
         
         if role == Qt.EditRole:
 
             row = index.row()
             column = index.column()
-            print('row=' + str(row) + ' column=' + str(column))
+            logging.info('row=' + str(row) + ' column=' + str(column))
 
             # verify value
 
@@ -184,15 +185,15 @@ class SequenceTableModel(QAbstractTableModel):
     #      row = rowCount() => append
     # count: number of rows to be inserted
     def insertRows(self, row, count, parent = QModelIndex()):
-        print('insertRows has been called')
-        print('row=' + str(row) + ' count=' + str(count))
+        logging.info('insertRows has been called')
+        logging.info('row=' + str(row) + ' count=' + str(count))
 
         self.beginInsertRows(parent, row, row + count - 1)
         
         # insert data
         for i in range(count):
             seq_idx_before = row + i
-            print('seq_idx_before=' + str(seq_idx_before))
+            logging.info('seq_idx_before=' + str(seq_idx_before))
             if seq_idx_before == 0: # empty or prepend
                 self.__sequence.insert(seq_idx_before,
                   [0, 0, self.__localEvents[0]])
@@ -201,7 +202,7 @@ class SequenceTableModel(QAbstractTableModel):
                   [0, self.__sequence[seq_idx_before - 1]
                   [self.__columnMap['startOff']], self.__localEvents[0]])
 
-        print(self.__sequence)
+        logging.info(self.__sequence)
         
         self.endInsertRows()
         
@@ -212,8 +213,8 @@ class SequenceTableModel(QAbstractTableModel):
     # row: index of first row to be removed
     # count: number of rows to be removed
     def removeRowsKeepStepOff(self, row, count, parent = QModelIndex()):
-        print('removeRowsKeepStepOff has been called')
-        print('row=' + str(row) + ' count=' + str(count))
+        logging.info('removeRowsKeepStepOff has been called')
+        logging.info('row=' + str(row) + ' count=' + str(count))
         
         first = row
         last = first + count - 1
@@ -228,7 +229,7 @@ class SequenceTableModel(QAbstractTableModel):
         self.__sequence[first:last+1] = []
         self.startOffFromStepOff()
 
-        print(self.__sequence)
+        logging.info(self.__sequence)
 
         self.endRemoveRows()
         
@@ -239,8 +240,8 @@ class SequenceTableModel(QAbstractTableModel):
     # row: index of first row to be removed
     # count: number of rows to be removed
     def removeRowsKeepStartOff(self, row, count, parent = QModelIndex()):
-        print('removeRowsKeepStartOff has been called')
-        print('row=' + str(row) + ' count=' + str(count))
+        logging.info('removeRowsKeepStartOff has been called')
+        logging.info('row=' + str(row) + ' count=' + str(count))
         
         first = row
         last = first + count - 1
@@ -255,7 +256,7 @@ class SequenceTableModel(QAbstractTableModel):
         self.__sequence[first:last+1] = []
         self.stepOffFromStartOff()
 
-        print(self.__sequence)
+        logging.info(self.__sequence)
 
         self.endRemoveRows()
         
@@ -282,8 +283,8 @@ class SequenceTableModel(QAbstractTableModel):
 
     def getSeries(self):
 
-        print('SequenceTableModel.getSeries() is running')
-        print(self.__sequence)
+        logging.info('SequenceTableModel.getSeries() is running')
+        logging.info(self.__sequence)
 
         # find the length of the series
         if self.rowCount(self) == 0:
@@ -302,15 +303,15 @@ class SequenceTableModel(QAbstractTableModel):
             event_code = self.__sequence[row][self.__columnMap['evtCode']] 
             series[self.__localEvents.index(event_code)][step_offset] = 1
 
-        print(series)
-        print('SequenceTableModel.getSeries() is done')
+        logging.info(series)
+        logging.info('SequenceTableModel.getSeries() is done')
 
         return series
 
     def setSeries(self, series):
 
-        print('SequenceTableModel.setSeries() is running')
-        print(series)
+        logging.info('SequenceTableModel.setSeries() is running')
+        logging.info(series)
 
         # init sequence
         s = 0
@@ -336,7 +337,7 @@ class SequenceTableModel(QAbstractTableModel):
                     self.__sequence[row][self.__columnMap['startOff']] = i
                     self.__sequence[row][self.__columnMap['evtCode']] = self.__localEvents[k]
                     row += 1
-        print(self.__sequence)
+        logging.info(self.__sequence)
 
 
 class SequenceTableView(QTableView):
@@ -354,7 +355,7 @@ class SequenceTableView(QTableView):
           vertical.length() *10 + horizontal.height() + frame)
 
     def contextMenuEvent(self, event):
-      print("SequenceTableView::contextMenuEvent() is running")
+      logging.info("SequenceTableView::contextMenuEvent() is running")
       
       position = event.pos()
       column = self.columnAt(position.x())
@@ -377,17 +378,17 @@ class SequenceTableView(QTableView):
       self.menu.popup(QCursor.pos())
 
     def insertRow(self, row):
-      print("SequenceTableView::insertRow() is running")
+      logging.info("SequenceTableView::insertRow() is running")
       self.model.insertRows(row + 1, 1)
       #self.adjustSize()
 
     def removeRowKeepStepOff(self, row):
-      print("SequenceTableView::removeRowKeepStepOff() is running")
+      logging.info("SequenceTableView::removeRowKeepStepOff() is running")
       self.model.removeRowsKeepStepOff(row, 1)
       #self.adjustSize()
 
     def removeRowKeepStartOff(self, row):
-      print("SequenceTableView::removeRowKeepStartOff() is running")
+      logging.info("SequenceTableView::removeRowKeepStartOff() is running")
       self.model.removeRowsKeepStartOff(row, 1)
       #self.adjustSize()
 
@@ -551,7 +552,7 @@ class SequenceDialog(QWidget):
 
     def btnDownAction(self):
 
-        print('button down has been pressed')
+        logging.info('button down has been pressed')
 
         series = self.__model.getSeries()
 
@@ -581,11 +582,11 @@ class SequenceDialog(QWidget):
         self.setCompare(SequenceState.EQUAL)
 
     def btnUpAction(self):
-        print('button up has been pressed')
+        logging.info('button up has been pressed')
         self.uploadSequence()
 
     def btnStartAction(self):
-        print('button start has been pressed')
+        logging.info('button start has been pressed')
         if self.__rbtn_forever.isChecked():
             repetitions = 0
         else:
@@ -594,20 +595,20 @@ class SequenceDialog(QWidget):
         self.pvStart.put(1)
 
     def btnStopAction(self):
-        print('button stop has been pressed')
+        logging.info('button stop has been pressed')
         self.pvStop.put(1)
 
     def btnInsertRowAction(self):
-        print('button "insert row" has been pressed')
+        logging.info('button "insert row" has been pressed')
         self.__model.insertRows(self.__model.rowCount(self), 1)
 
     def btnRemoveRowAction(self):
-        print('button "remove row" has been pressed')
+        logging.info('button "remove row" has been pressed')
         self.__model.removeRowsKeepStepOff(self.__model.rowCount(self) - 1, 1)
 
     def emitStatusChange(self):
 
-        print('SequenceDialog.emitStatusChange is running')
+        logging.info('SequenceDialog.emitStatusChange is running')
 
         # get status and set/enable/disable related widgets
         value = self.pvStatus.get()
@@ -634,11 +635,11 @@ class SequenceDialog(QWidget):
             self.__rbtn_repetitions.setChecked(True)
             self.__sb_repetitions.setValue(repetitions)
 
-        print('SequenceDialog.leaving emitStatusChange')
+        logging.info('SequenceDialog.leaving emitStatusChange')
 
     def uploadSequence(self):
 
-        print('SequenceDialog.uploadSequence() is running')
+        logging.info('SequenceDialog.uploadSequence() is running')
 
         series = [None] * len(self.__localEvents)
 
@@ -696,11 +697,11 @@ class SequenceDialog(QWidget):
 
         self.setCompare(SequenceState.EQUAL)
 
-        print('SequenceDialog.uploadSequence() is done')
+        logging.info('SequenceDialog.uploadSequence() is done')
 
     def __on_pv_status_changes(self, pvname=None, value=None, char_value=None,
         **kw):
-        print('pv status has changed, value=' + str(value))
+        logging.info('pv status has changed, value=' + str(value))
         self.emit(SIGNAL("seqCtrlStatusChange"), value)
 
 
@@ -718,17 +719,31 @@ class SequenceDialog(QWidget):
 
 if __name__ == '__main__':
     
+    # setup parser
     parser = argparse.ArgumentParser()
     parser.add_argument('esx', help='Specify experimental station for which '
         'the CTA GUI shall be started.', choices=['ESA', 'ESB'])
     parser.add_argument('device', help='Name of device running CTA.')
+    parser.add_argument('-l', '--loglevel', help='Specify level for logging '
+        '(used for debugging)'
+        , choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'],
+        default = 'WARNING')
     args = parser.parse_args()
 
+    # setup logging
+    numeric_level = getattr(logging, args.loglevel.upper(), None)
+    if not isinstance(numeric_level, int):
+        raise ValueError('Invalid log level: %s' % args.loglevel)
+    logging.basicConfig(level=numeric_level, format='%(asctime)s | %(levelname)8s | %(message)s')
+    
+    # setup application
     app = QApplication(sys.argv)
     app.setStyle("plastique")
 
+    # setup dialog
     dialog = SequenceDialog(args)
     dialog.show()
     
+    # run application
     sys.exit(app.exec_())
 
