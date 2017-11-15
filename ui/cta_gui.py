@@ -202,7 +202,7 @@ class SequenceTableModel(QAbstractTableModel):
                   [0, self.__sequence[seq_idx_before - 1]
                   [self.__columnMap['startOff']], self.__localEvents[0]])
 
-        logging.info(self.__sequence)
+        logging.debug(self.__sequence)
         
         self.endInsertRows()
         
@@ -229,7 +229,7 @@ class SequenceTableModel(QAbstractTableModel):
         self.__sequence[first:last+1] = []
         self.startOffFromStepOff()
 
-        logging.info(self.__sequence)
+        logging.debug(self.__sequence)
 
         self.endRemoveRows()
         
@@ -256,7 +256,7 @@ class SequenceTableModel(QAbstractTableModel):
         self.__sequence[first:last+1] = []
         self.stepOffFromStartOff()
 
-        logging.info(self.__sequence)
+        logging.debug(self.__sequence)
 
         self.endRemoveRows()
         
@@ -284,7 +284,7 @@ class SequenceTableModel(QAbstractTableModel):
     def getSeries(self):
 
         logging.info('SequenceTableModel.getSeries() is running')
-        logging.info(self.__sequence)
+        logging.debug(self.__sequence)
 
         # find the length of the series
         if self.rowCount(self) == 0:
@@ -303,7 +303,7 @@ class SequenceTableModel(QAbstractTableModel):
             event_code = self.__sequence[row][self.__columnMap['evtCode']] 
             series[self.__localEvents.index(event_code)][step_offset] = 1
 
-        logging.info(series)
+        logging.debug(series)
         logging.info('SequenceTableModel.getSeries() is done')
 
         return series
@@ -311,7 +311,7 @@ class SequenceTableModel(QAbstractTableModel):
     def setSeries(self, series):
 
         logging.info('SequenceTableModel.setSeries() is running')
-        logging.info(series)
+        logging.debug(series)
 
         # init sequence
         s = 0
@@ -337,7 +337,7 @@ class SequenceTableModel(QAbstractTableModel):
                     self.__sequence[row][self.__columnMap['startOff']] = i
                     self.__sequence[row][self.__columnMap['evtCode']] = self.__localEvents[k]
                     row += 1
-        logging.info(self.__sequence)
+        logging.debug(self.__sequence)
 
 
 class SequenceTableView(QTableView):
