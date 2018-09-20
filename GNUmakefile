@@ -15,6 +15,7 @@ DBDS += seqCtrl/seqCtrl.dbd
 
 TEMPLATES += cta/cta.template
 TEMPLATES += cta/cta.db
+TEMPLATES += cta/performance.db
 TEMPLATES += seqCtrl/seqCtrl.db
 TEMPLATES += series/series.db
 TEMPLATES += superposition/superposition.db

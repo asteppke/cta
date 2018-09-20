@@ -18,7 +18,17 @@
 # cta.db provided the records to glue all the elements together.
 
 file cta.db {
-  {P="$(DN):", LENGTH="$(LEN=2048)"}
+  {P="$(DN):", LENGTH="$(LEN=2048)", SOS1_FWD_HOOK="$(DN):Seq1PerfStart-Cmd", SOS2_FWD_HOOK="$(DN):Seq2PerfStart-Cmd"}
+}
+
+# performance -----------------------------------------------------------------
+#
+# performance.db contains records to provide a performance measurement
+# functionality.
+
+file performance.db {
+  {P="$(DN):", SEQNUM="1"}
+  {P="$(DN):", SEQNUM="2"}
 }
 
 # sequence definition ---------------------------------------------------------
