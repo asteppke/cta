@@ -25,3 +25,5 @@ ifeq (spy, $(CONF))
   qpc_VERSION = spy
 endif
 
+install_ui:
+	scripts/install_ui.sh ui
