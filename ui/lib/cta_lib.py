@@ -39,8 +39,14 @@ class CtaLib:
     # create connection housekeeper
     self.num_connected = 0
 
+    # create attributes for callback support
+    self._status_callbacks = list()
+    self._series_callbacks = list()
+
     # create pv objects
     self.pvs = dict()
+
+    self.num_of_pvs = 26
 
     pv_name = device + ':SerMaxLen'
     self.pvs['SerMaxLen'] = PV(pv_name,
@@ -60,15 +66,15 @@ class CtaLib:
       connection_callback=self.connection_callback)
     pv_name = device + ':seq' + str(sequence) + 'Ctrl-IsRunning-O'
     self.pvs['Ctrl-IsRunning-O'] = PV(pv_name,
+      callback=self._status_callback,
       connection_callback=self.connection_callback)
 
     self.pvs['Data-I'] = list()
     for i in range(0, self.num_of_event_codes):
       pv_name = device + ':seq' + str(sequence) + 'Ser' + str(i) + '-Data-I'
       self.pvs['Data-I'].append(PV(pv_name,
+        callback=self._series_callback,
         connection_callback=self.connection_callback))
-
-    self.num_of_pvs = 26
 
     # wait for the connections to be established
     rv = self.event.wait(timeout=5.0)
@@ -98,17 +104,18 @@ class CtaLib:
 
     Arguments
     seq: The sequence to be downloaded to the IOC.
-         seq is a dictionary where each key value pair represents an event.
+         seq is a dictionary where each key value pair represents a series.
+         A series is a list of 0's and 1's which defines, if the corresponding event code
+         is send in the corresponding machine pulse.
          The key is an integer and represents the event code.
-         The value is a list which defines, if the corresponding event is send
-         in the machine pulse or not (1 = event is send, 0 = event is not send)
+         The value is the series.
          If a certain event code is not send in the sequence, it may or may not
          not be present in the dictionary.
          Example:
            seq = {200: [1, 0], 201: [1, 1]}
            =>
-           machine pulse 0: event code 200 is send
-           machine pulse 1: event code 200 and 201 are send
+           machine pulse     x: event code 200 is send
+           machine pulse x + 1: event code 200 and 201 are send
     """
 
     logging.info('download() is running')
@@ -238,6 +245,38 @@ class CtaLib:
 
     return rv
 
+  def register_status_callback(self, callback):
+    """
+    This function can be used to register a callback function which is
+    called if the status of the sequence controller changed.
+
+    The following arguments will be passed to the callback function:
+      value: 1 if sequence is running, 0 otherwise
+
+    Keep your callback function short.
+
+    Arguments
+    callback: Function to be called.
+    """
+    self._status_callbacks.append(callback)
+
+  def register_series_callback(self, callback):
+    """
+    This function can be used to register a callback function which is
+    called if a series of the sequence on the IOC has changed.
+
+    Refer to the download method for a definition of a sequence.
+
+    The following arguments will be passed to the callback function:
+      sequence: sequence containing the series which has changed
+
+    Keep your callback function short.
+
+    Arguments
+    callback: Function to be called
+    """
+    self._series_callbacks.append(callback)
+
   def check_sequence(self, seq):
     """
     Check if a sequence is valid
@@ -336,6 +375,47 @@ class CtaLib:
       print()
 
     logging.info('print() is done')
+
+  def _status_callback(self, value=None, **kw):
+    """
+    Callback function which is called when the status PV changes the value.
+    It is used to call user callback functions which registered for
+    for this event.
+    """
+    logging.info('_status_callback() is running (value=' + str(value) + ')')
+
+    logging.info('calling status callbacks next')
+    for cb in self._status_callbacks:
+      cb(value)
+    logging.info('calling status callbacks done')
+
+  def _series_callback(self, pvname=None, value=None, **kw):
+    """
+    Callback function which is called when one of the PVs holding a series of
+    the sequence changes the value. It is used to call user callback functions which
+    registered for this event.
+    """
+    logging.info('_series_callback() is running (pv=' + pvname + ', value=' + str(value))
+
+    event_number = self.event_code_range_base
+
+    # determine event number from pvname
+    for idx, pv in enumerate(self.pvs['Data-I']):
+      if pv.pvname == pvname:
+        event_number = self.event_code_range_base + idx
+        break
+
+    # create sequence
+    seq = {}
+    seq[event_number] = numpy.atleast_1d(value).tolist()
+    
+    # call callbacks
+    logging.info('calling sequence callbacks next')
+    for cb in self._series_callbacks:
+      cb(seq)
+    logging.info('calling sequence callbacks done')
+
+    logging.info('_series_callback() is done')
 
   def connection_callback(self, pvname=None, conn=None, **kw):
     """
