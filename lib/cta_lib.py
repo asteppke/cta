@@ -186,12 +186,47 @@ class CtaLib:
 
         return seq
 
-    def start(self, repetitions):
+    def set_num_of_repetitions(self, repetitions):
+        """
+        Set the number of repetitions to the CTA.
+        This is the number of times the sequence will be repeated when started.
+
+        Arguments:
+        repetitions: 0 = forever, x = x repetitions
+        """
+        # check connections
+        is_all_connected = self.event.wait(timeout=5.0)
+        if not is_all_connected:
+            raise RuntimeError('Some PV(s) is/are not connected')
+
+        # set number of repetitions
+        self.pvs['Ctrl-Cycles-I'].put(repetitions, wait=True)
+
+    def get_num_of_repetitions(self):
+        """
+        Get the number of repetitions from the CTA.
+        This is the number of times the sequence will be repeated when started.
+
+        Return
+        repetitions: 0 = forever, x = x repetitions
+        """
+        # check connections
+        is_all_connected = self.event.wait(timeout=5.0)
+        if not is_all_connected:
+            raise RuntimeError('Some PV(s) is/are not connected')
+
+        # get number of repetitions
+        repetitions = self.pvs['Ctrl-Cycles-I'].get()
+
+        return repetitions
+
+    def start(self, repetitions=None):
         """
         Start CTA
 
         Arguments
         repetitions: 0 = forever, x = x repetitions
+                     defaut: do not set number of repetitions, last value on IOC will be used
         """
 
         logging.info('start() is running (repetitions=' + str(repetitions) + ')')
@@ -201,8 +236,11 @@ class CtaLib:
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
+        # set number of repetitions
+        if repetitions is not None:
+            self.pvs['Ctrl-Cycles-I'].put(repetitions, wait=True)
+
         # start
-        self.pvs['Ctrl-Cycles-I'].put(repetitions, wait=True)
         self.pvs['Ctrl-Start-I'].put(1, wait=True)
 
         time.sleep(3) # => NOTE01
