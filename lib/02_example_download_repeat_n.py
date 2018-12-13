@@ -27,9 +27,9 @@ if __name__ == '__main__':
     series[i] = 1
   sequence[201] = series
 
-  # download
-  print(">> downloading")
-  lib.download(sequence)
+  # upload
+  print(">> uploading")
+  lib.upload(sequence)
 
   # start
   print(">> starting (10 repetitions)")

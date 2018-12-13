@@ -15,9 +15,9 @@ if __name__ == '__main__':
   # create cta lib object
   lib = cta_lib.CtaLib(args.device, log_level=args.loglevel)
 
-  # upload
-  print(">> uploading")
-  sequence = lib.upload()
+  # download
+  print(">> downloading")
+  sequence = lib.download()
 
   # print
   print(">> printing")

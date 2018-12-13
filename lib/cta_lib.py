@@ -107,27 +107,27 @@ class CtaLib:
 
         logging.info('__del__() is done')
 
-    def download(self, seq):
+    def upload(self, seq):
         """
-        Download a sequence to the IOC
+        Upload a sequence to the IOC
 
         Arguments
-        seq: The sequence to be downloaded to the IOC.
-                  seq is a dictionary where each key value pair represents a series.
-                  A series is a list of 0's and 1's which defines, if the corresponding event code
-                  is send in the corresponding machine pulse.
-                  The key is an integer and represents the event code.
-                  The value is the series.
-                  If a certain event code is not send in the sequence, it may or may not
-                  not be present in the dictionary.
-                  Example:
-                      seq = {200: [1, 0], 201: [1, 1]}
-                      =>
-                      machine pulse     x: event code 200 is send
-                      machine pulse x + 1: event code 200 and 201 are send
+        seq: The sequence to be upload to the IOC.
+             A sequence is a dictionary where each key value pair represents a series.
+             A series is a list of 0's and 1's which defines, if the corresponding event code
+             is send in the corresponding machine pulse.
+             The key is an integer and represents the event code.
+             The value is the series.
+             If a certain event code is not send in the sequence, it may or may not
+             not be present in the dictionary.
+             Example:
+                 seq = {200: [1, 0], 201: [1, 1]}
+                 =>
+                 machine pulse     x: event code 200 is send
+                 machine pulse x + 1: event code 200 and 201 are send
         """
 
-        logging.info('download() is running')
+        logging.info('upload() is running')
 
         # check the sequence
         self.check_sequence(seq)
@@ -136,14 +136,14 @@ class CtaLib:
         seq = self.fill_empty_series(seq)
 
         # logging
-        logging.debug('download() downloads: ' + str(seq))
+        logging.debug('upload() upload: ' + str(seq))
 
         # check connections
         is_all_connected = self.event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
-        # downloading seq to pvs
+        # upload seq to pvs
         for i in range(0, self.constants['num_of_event_codes']):
             self.pvs['Data-I'][i].put(
                 numpy.array(seq[self.constants['event_code_range_base'] + i]), wait=True)
@@ -151,25 +151,25 @@ class CtaLib:
         # set length
         self.pvs['Ctrl-Length-I'].put(len(seq[self.constants['event_code_range_base']]), wait=True)
 
-        logging.info('download() is done')
+        logging.info('upload() is done')
 
-    def upload(self):
+    def download(self):
         """
-        Upload a sequence from the IOC
+        Download a sequence from the IOC
 
         Return
-        seq: The sequence uploaded from the IOC.
-                  Refer to the download method for a definition of seq.
+        seq: The sequence downloaded from the IOC.
+             Refer to the upload method for a definition of seq.
         """
 
-        logging.info('upload() is running')
+        logging.info('download() is running')
 
         # check connections
         is_all_connected = self.event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
-        # upload
+        # download
         seq = {}
         for i in range(0, self.constants['num_of_event_codes']):
             logging.debug('NORD of ' + str(i) + ':' + str(self.pvs['Data-I'][i]))
@@ -177,12 +177,12 @@ class CtaLib:
                 self.pvs['Data-I'][i].get()).tolist()
 
         # logging
-        logging.debug('upload() uploaded: ' + str(seq))
+        logging.debug('download() downloaded: ' + str(seq))
 
         # check the sequence
         self.check_sequence(seq)
 
-        logging.info('upload() is done')
+        logging.info('download() is done')
 
         return seq
 
@@ -271,7 +271,7 @@ class CtaLib:
         This function can be used to register a callback function which is
         called if a series of the sequence on the IOC has changed.
 
-        Refer to the download method for a definition of a sequence.
+        Refer to the upload method for a definition of a sequence.
 
         The following arguments will be passed to the callback function:
             sequence: sequence containing the series which has changed
@@ -290,7 +290,7 @@ class CtaLib:
         Arguments
         seq: The sequence to be checked.
                   A RunTimeError exception is thrown if the sequence is not valid.
-                  Refer to the download method for a definition of seq.
+                  Refer to the upload method for a definition of seq.
         """
 
         logging.info('check_sequence() is running')
@@ -340,7 +340,7 @@ class CtaLib:
         Return
         seq: The sequence with all events defined.
 
-        Refer to the download method for a definition of seq.
+        Refer to the upload method for a definition of seq.
         """
 
 
@@ -361,7 +361,7 @@ class CtaLib:
 
         Arguments
         seq: The sequence to be printed.
-                  Refer to the download method for a definition of seq.
+                  Refer to the upload method for a definition of seq.
         """
 
         logging.info('print() is running')

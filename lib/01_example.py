@@ -40,17 +40,17 @@ if __name__ == '__main__':
     sequence[218] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0]
     sequence[219] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]
 
-    # download
-    print('>> downloading')
-    lib.download(sequence)
+    # upload
+    print('>> uploading')
+    lib.upload(sequence)
 
     # start
     print(">> starting (1 repetition)")
     lib.start(1)
 
-    # upload
-    print('>> uploading')
-    sequence = lib.upload()
+    # download
+    print('>> downloading')
+    sequence = lib.download()
 
     # print
     print('>> printing')
