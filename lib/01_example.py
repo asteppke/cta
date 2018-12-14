@@ -61,3 +61,8 @@ if __name__ == '__main__':
     max_len = lib.get_max_length()
     print('>> it is ' + str(max_len))
 
+    # get length of the sequence on the IOC
+    print('>> get length of the sequence on the IOC')
+    length = lib.get_length()
+    print('>> it is ' + str(length))
+

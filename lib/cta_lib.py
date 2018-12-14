@@ -128,6 +128,27 @@ class CtaLib:
 
         return max_length
 
+    def get_length(self):
+        """
+        Get the length of the sequence on the IOC
+
+        Return
+        length: length of the sequence
+        """
+        logging.info('get_length() is running')
+
+        # check connections
+        is_all_connected = self._event.wait(timeout=5.0)
+        if not is_all_connected:
+            raise RuntimeError('Some PV(s) is/are not connected')
+
+        # get length
+        length = self._pvs['Ctrl-Length-I'].get()
+
+        logging.info('get_length() is done')
+
+        return length
+
     def upload(self, seq):
         """
         Upload a sequence to the IOC
