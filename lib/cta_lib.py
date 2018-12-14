@@ -384,10 +384,12 @@ class CtaLib:
 
         logging.info('fill_empty_series() is running')
 
-        length = len(seq[list(seq)[0]])
-        for i in range(self.constants['event_code_range_base'], 220):
-            if i not in seq:
-                seq[i] = [0] * length
+        length = len(seq[self.constants['event_code_range_base']])
+        for event_code in range(self.constants['event_code_range_base'],
+                                self.constants['event_code_range_base'] +
+                                self.constants['num_of_event_codes']):
+            if event_code not in seq:
+                seq[event_code] = [0] * length
 
         logging.info('fill_empty_series() is done')
 
