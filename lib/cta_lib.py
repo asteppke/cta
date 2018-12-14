@@ -25,10 +25,10 @@ class CtaLib:
         sequence: sequence number (default = 0)
         log_level: critical, error, warning, info, debug
         """
-        self.constants = dict()
-        self.constants['event_code_range_base'] = 200
-        self.constants['num_of_event_codes'] = 20
-        self.constants['num_of_pvs'] = 26
+        self._constants = dict()
+        self._constants['event_code_range_base'] = 200
+        self._constants['num_of_event_codes'] = 20
+        self._constants['num_of_pvs'] = 26
 
         # setup logging
         numeric_level = getattr(logging, log_level.upper(), None)
@@ -39,61 +39,61 @@ class CtaLib:
         logging.info('__init__() is running (device=' + device +')')
 
         # create threading event
-        self.event = threading.Event()
+        self._event = threading.Event()
 
         # create connection housekeeper
-        self.num_connected = 0
+        self._num_connected = 0
 
         # create attributes for callback support
         self._status_callbacks = list()
         self._series_callbacks = list()
 
         # create pv objects
-        self.pvs = dict()
+        self._pvs = dict()
 
         pv_name = device + ':SerMaxLen'
-        self.pvs['SerMaxLen'] = PV(
+        self._pvs['SerMaxLen'] = PV(
             pv_name,
-            connection_callback=self.connection_callback)
+            connection_callback=self._connection_callback)
 
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-Length-I'
-        self.pvs['Ctrl-Length-I'] = PV(
+        self._pvs['Ctrl-Length-I'] = PV(
             pv_name,
-            connection_callback=self.connection_callback)
+            connection_callback=self._connection_callback)
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-Cycles-I'
-        self.pvs['Ctrl-Cycles-I'] = PV(
+        self._pvs['Ctrl-Cycles-I'] = PV(
             pv_name,
-            connection_callback=self.connection_callback)
+            connection_callback=self._connection_callback)
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-Start-I'
-        self.pvs['Ctrl-Start-I'] = PV(
+        self._pvs['Ctrl-Start-I'] = PV(
             pv_name,
-            connection_callback=self.connection_callback)
+            connection_callback=self._connection_callback)
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-Stop-I'
-        self.pvs['Ctrl-Stop-I'] = PV(
+        self._pvs['Ctrl-Stop-I'] = PV(
             pv_name,
-            connection_callback=self.connection_callback)
+            connection_callback=self._connection_callback)
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-IsRunning-O'
-        self.pvs['Ctrl-IsRunning-O'] = PV(
+        self._pvs['Ctrl-IsRunning-O'] = PV(
             pv_name,
             callback=self._status_callback,
-            connection_callback=self.connection_callback)
+            connection_callback=self._connection_callback)
 
-        self.pvs['Data-I'] = list()
-        for i in range(0, self.constants['num_of_event_codes']):
+        self._pvs['Data-I'] = list()
+        for i in range(0, self._constants['num_of_event_codes']):
             pv_name = device + ':seq' + str(sequence) + 'Ser' + str(i) + '-Data-I'
-            self.pvs['Data-I'].append(PV(
+            self._pvs['Data-I'].append(PV(
                 pv_name,
                 callback=self._series_callback,
-                connection_callback=self.connection_callback))
+                connection_callback=self._connection_callback))
 
         # wait for the connections to be established
-        if not self.event.wait(timeout=5.0):
+        if not self._event.wait(timeout=5.0):
             raise RuntimeError('Some PV(s) is/are not connected')
         time.sleep(1) # NOTE02
 
         # logging
-        for i in range(0, self.constants['num_of_event_codes']):
-            logging.debug('NORD of ' + str(i) + ':' + str(self.pvs['Data-I'][i]))
+        for i in range(0, self._constants['num_of_event_codes']):
+            logging.debug('NORD of ' + str(i) + ':' + str(self._pvs['Data-I'][i]))
         logging.info('__init__() is done')
 
     def __del__(self):
@@ -103,7 +103,7 @@ class CtaLib:
 
         logging.info('__del__() is running')
 
-        del self.pvs
+        del self._pvs
 
         logging.info('__del__() is done')
 
@@ -139,17 +139,18 @@ class CtaLib:
         logging.debug('upload() upload: ' + str(seq))
 
         # check connections
-        is_all_connected = self.event.wait(timeout=5.0)
+        is_all_connected = self._event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
         # upload seq to pvs
-        for i in range(0, self.constants['num_of_event_codes']):
-            self.pvs['Data-I'][i].put(
-                numpy.array(seq[self.constants['event_code_range_base'] + i]), wait=True)
+        for i in range(0, self._constants['num_of_event_codes']):
+            self._pvs['Data-I'][i].put(
+                numpy.array(seq[self._constants['event_code_range_base'] + i]), wait=True)
 
         # set length
-        self.pvs['Ctrl-Length-I'].put(len(seq[self.constants['event_code_range_base']]), wait=True)
+        self._pvs['Ctrl-Length-I'].put(len(seq[self._constants['event_code_range_base']]),
+                                       wait=True)
 
         logging.info('upload() is done')
 
@@ -165,16 +166,16 @@ class CtaLib:
         logging.info('download() is running')
 
         # check connections
-        is_all_connected = self.event.wait(timeout=5.0)
+        is_all_connected = self._event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
         # download
         seq = {}
-        for i in range(0, self.constants['num_of_event_codes']):
-            logging.debug('NORD of ' + str(i) + ':' + str(self.pvs['Data-I'][i]))
-            seq[self.constants['event_code_range_base'] + i] = numpy.atleast_1d(
-                self.pvs['Data-I'][i].get()).tolist()
+        for i in range(0, self._constants['num_of_event_codes']):
+            logging.debug('NORD of ' + str(i) + ':' + str(self._pvs['Data-I'][i]))
+            seq[self._constants['event_code_range_base'] + i] = numpy.atleast_1d(
+                self._pvs['Data-I'][i].get()).tolist()
 
         # logging
         logging.debug('download() downloaded: ' + str(seq))
@@ -195,12 +196,12 @@ class CtaLib:
         repetitions: 0 = forever, x = x repetitions
         """
         # check connections
-        is_all_connected = self.event.wait(timeout=5.0)
+        is_all_connected = self._event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
         # set number of repetitions
-        self.pvs['Ctrl-Cycles-I'].put(repetitions, wait=True)
+        self._pvs['Ctrl-Cycles-I'].put(repetitions, wait=True)
 
     def get_num_of_repetitions(self):
         """
@@ -211,12 +212,12 @@ class CtaLib:
         repetitions: 0 = forever, x = x repetitions
         """
         # check connections
-        is_all_connected = self.event.wait(timeout=5.0)
+        is_all_connected = self._event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
         # get number of repetitions
-        repetitions = self.pvs['Ctrl-Cycles-I'].get()
+        repetitions = self._pvs['Ctrl-Cycles-I'].get()
 
         return repetitions
 
@@ -232,16 +233,16 @@ class CtaLib:
         logging.info('start() is running (repetitions=' + str(repetitions) + ')')
 
         # check connections
-        is_all_connected = self.event.wait(timeout=5.0)
+        is_all_connected = self._event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
         # set number of repetitions
         if repetitions is not None:
-            self.pvs['Ctrl-Cycles-I'].put(repetitions, wait=True)
+            self._pvs['Ctrl-Cycles-I'].put(repetitions, wait=True)
 
         # start
-        self.pvs['Ctrl-Start-I'].put(1, wait=True)
+        self._pvs['Ctrl-Start-I'].put(1, wait=True)
 
         time.sleep(3) # => NOTE01
 
@@ -256,11 +257,11 @@ class CtaLib:
         logging.info('stop() is running')
 
         # check connections
-        is_all_connected = self.event.wait(timeout=5.0)
+        is_all_connected = self._event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
-        self.pvs['Ctrl-Stop-I'].put(1, wait=True)
+        self._pvs['Ctrl-Stop-I'].put(1, wait=True)
 
         # stop
         time.sleep(3) # => NOTE01
@@ -278,12 +279,12 @@ class CtaLib:
         logging.info('is_running() is running')
 
         # check connections
-        is_all_connected = self.event.wait(timeout=5.0)
+        is_all_connected = self._event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
         # get status
-        is_running = bool(self.pvs['Ctrl-IsRunning-O'].get() != 0)
+        is_running = bool(self._pvs['Ctrl-IsRunning-O'].get() != 0)
 
         logging.info('is_running() is done')
 
@@ -361,7 +362,7 @@ class CtaLib:
 
         # check that series are not too long
         length = len(seq[list(seq)[0]])
-        if length > self.pvs['SerMaxLen'].get():
+        if length > self._pvs['SerMaxLen'].get():
             raise RuntimeError(
                 "dictionary contains key value pair where the values "
                 "are lists with too many elements")
@@ -384,10 +385,10 @@ class CtaLib:
 
         logging.info('fill_empty_series() is running')
 
-        length = len(seq[self.constants['event_code_range_base']])
-        for event_code in range(self.constants['event_code_range_base'],
-                                self.constants['event_code_range_base'] +
-                                self.constants['num_of_event_codes']):
+        length = len(seq[self._constants['event_code_range_base']])
+        for event_code in range(self._constants['event_code_range_base'],
+                                self._constants['event_code_range_base'] +
+                                self._constants['num_of_event_codes']):
             if event_code not in seq:
                 seq[event_code] = [0] * length
 
@@ -419,9 +420,9 @@ class CtaLib:
         print('-----------------------------------------------')
         for i in range(length):
             print(repr(i).rjust(5), '|', end='')
-            for event_code in range(self.constants['event_code_range_base'],
-                                    self.constants['event_code_range_base'] +
-                                    self.constants['num_of_event_codes']):
+            for event_code in range(self._constants['event_code_range_base'],
+                                    self._constants['event_code_range_base'] +
+                                    self._constants['num_of_event_codes']):
                 print("{state}".format(state=seq[event_code][i]).rjust(2), end='')
             print()
 
@@ -450,9 +451,9 @@ class CtaLib:
                      ', value=' + str(kwargs['value']))
 
         # determine event number from pvname
-        for idx, pv in enumerate(self.pvs['Data-I']): # pylint: disable=C0103
+        for idx, pv in enumerate(self._pvs['Data-I']): # pylint: disable=C0103
             if pv.pvname == kwargs['pvname']:
-                event_number = self.constants['event_code_range_base'] + idx
+                event_number = self._constants['event_code_range_base'] + idx
                 break
 
         # create sequence
@@ -467,7 +468,7 @@ class CtaLib:
 
         logging.info('_series_callback() is done')
 
-    def connection_callback(self, **kwargs):
+    def _connection_callback(self, **kwargs):
         """
         Callback function used internally to do connection status housekeeping
 
@@ -476,24 +477,24 @@ class CtaLib:
         conn: status of the connection
         """
 
-        logging.info('connection_callback() is running (pvname=' + kwargs['pvname'] +
+        logging.info('_connection_callback() is running (pvname=' + kwargs['pvname'] +
                      ', conn=' + repr(kwargs['conn']) + ', thread_id=' +
                      str(threading.get_ident()) +')')
 
         # do connection housekeeping
         if kwargs['conn']:
-            self.num_connected += 1
+            self._num_connected += 1
         else:
-            self.num_connected -= 1
-        logging.debug('num_connected=' + str(self.num_connected))
+            self._num_connected -= 1
+        logging.debug('_num_connected=' + str(self._num_connected))
 
         # signal to other thread
-        if self.num_connected == self.constants['num_of_pvs']:
-            self.event.set()
+        if self._num_connected == self._constants['num_of_pvs']:
+            self._event.set()
         else:
-            self.event.clear()
+            self._event.clear()
 
-        logging.info('connection_callback() is done')
+        logging.info('_connection_callback() is done')
 
 # NOTE01
 # This sleep is needed for unknown reasons.
