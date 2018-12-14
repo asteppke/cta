@@ -107,6 +107,27 @@ class CtaLib:
 
         logging.info('__del__() is done')
 
+    def get_max_length(self):
+        """
+        Get the maximal length of a sequence
+
+        Return
+        max_length: maximal length of a sequence
+        """
+        logging.info('get_max_length() is running')
+
+        # check connections
+        is_all_connected = self._event.wait(timeout=5.0)
+        if not is_all_connected:
+            raise RuntimeError('Some PV(s) is/are not connected')
+
+        # get max length
+        max_length = self._pvs['SerMaxLen'].get()
+
+        logging.info('get_max_length() is done')
+
+        return max_length
+
     def upload(self, seq):
         """
         Upload a sequence to the IOC

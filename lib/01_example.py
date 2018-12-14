@@ -55,3 +55,9 @@ if __name__ == '__main__':
     # print
     print('>> printing')
     lib.print(sequence)
+
+    # get maximal length of a sequence
+    print('>> get maximal length of a sequence')
+    max_len = lib.get_max_length()
+    print('>> it is ' + str(max_len))
+
