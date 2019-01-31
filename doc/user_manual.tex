@@ -8,6 +8,7 @@
 \usepackage{hyperref}
 \usepackage{xr} % cross-reference across files
 \usepackage{float} %for H positioning
+\usepackage{listings}
 
 \externaldocument[TUT-]{tutorial}
 
@@ -33,7 +34,7 @@
 
 \maketitle
 
-\version{This user manual has been generated from the CTA src tree version 1.0.3}
+\version{This user manual has been generated from the CTA src tree version 1.0.3\_dirty}
 
 %\begin{abstract}
 %\end{abstract}
@@ -87,23 +88,77 @@ The CTA is an EPICS software application which runs on a fanout. It has the
 following responsibilities:
 \begin{itemize}
 \item
-Provide a GUI which allows the user to define a sequence of event codes.
+Provide a user interace which allows the user to define a sequence of event codes.
 \item
-The GUI must be able to download the event code sequence to the IOC
+The user must be able to download the event code sequence to the IOC
 running the CTA.
 \item
 The CTA must program the hardware such that the sequence of event codes
 is send in the timing stream.
 \end{itemize}
 
-Refer to section \ref{sec:Examples} for examples how an event code sequence
+TMA event codes are seen by all event receivers in the tree. CTA event
+codes are seen by event receivers in the CTA subtree only
+
+\section{CTA overview}\label{sec:CTA}
+
+\subsection{Concept and terminology}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\columnwidth]{./img/cta_overview_1}
+	\caption{CTA overview}
+	\label{fig:cta_overview}
+\end{figure}
+
+Figure \ref{fig:cta_overview} shows the context in which the CTA is running.
+As shown in the figure, there are three different user interfaces to control the
+CTA. These user interfaces are described in \ref{sec:CtaUserInterfaces}.
+
+As mentioned above the user can define a sequence of events.
+A sequence consists of one or more series and a series defines, if a specific event
+shall be sent in a machine pulse or not.
+
+\begin{table}[!hbt]
+\caption{CTA sequece}
+\label{tab:cta_sequence}
+\centering
+  \begin{tabular}{|c|c|c|}
+    \hline \textbf{machine pulse} & \textbf{event code A} & \textbf{event code B}\\ \hline
+    \hline X     & 1 & 0\\
+    \hline X + 1 & 0 & 1\\
+    \hline X + 2 & 1 & 0\\
+    \hline
+  \end{tabular}
+\end{table}
+
+Table \ref{tab:cta_sequence} shows a CTA sequence. In this sequence event code A is
+send in machine pulses X and X + 2. Event code B is send in machine pulse X + 1.
+
+Using the user interface the user can do the following actions:
+\begin{itemize}
+\item
+The sequence can be uploaded (user interface to CTA).
+\item
+The sequence can be downloaded (CTA to user interface).
+\item
+The number of times the sequence is repeated by the CTA can be set (integer or
+forever).
+\item
+The CTA can be instructed to start inserting the sequence in the timing stream.
+\item
+The CTA can be instructed to stop inserting the sequence in the timing stream.
+\item
+The status of the CTA can be retrieved (stopped, running)
+\end{itemize}
+
+Refer to section \ref{sec:CtaExampes} for examples how an event code sequence
 is injected in a timing stream signal.
 
-TMA event codes are seen by all event receivers in the tree. CTA event
-codes are seen by event receivers in the CTA subtree only.
-In SwissFEL we use the CTA for the ESA and ESB timing subtrees.
-To avoid interference of TMA and CTA event codes we decided to separate the
-TMA and CTA event codes in event code space and time.
+\subsection{Event and delay space}
+To avoid interference of TMA and CTA event codes, TMA and CTA event codes
+are separated in event code space and time.
+
 \begin{itemize}
 \item
 Event codes from 200-219 are reserved for CTA events. The TMA will not
@@ -148,8 +203,9 @@ can be seen in table \ref{tab:cta_event_delays}
   \end{tabular}
 \end{table}
 
-\section{GUI}\label{sec:GUI}
-\subsection{Starting the GUI}
+\section{CTA user interfaces}\label{sec:CtaUserInterfaces}
+\subsection{GUI}
+\subsubsection{Starting the GUI}
 The GUI to control the CTA can be started on a console with the following
 command:
 \begin{itemize}
@@ -159,28 +215,20 @@ ESA: start\_cta\_gui.sh ESA SAR-CCTA-ESA
 ESB: start\_cta\_gui.sh ESB SAR-CCTA-ESB
 \end{itemize}
 
-\subsection{Using the GUI}
-The GUI can be used for the following tasks:
-\begin{itemize}
-\item
-Down/upload a sequence to/from the IOC. 
-\item
-Define or modify a sequence.
-\item
-Start the sequence on the IOC.
-\end{itemize}
+\subsubsection{Using the GUI}
+
+The CTA GUI is shown in figure \ref{fig:cta_gui}.
 
 \begin{figure}[H]
 	\centering
 	\includegraphics[]{./img/gui_1}
 	\caption{CTA GUI}
-	\label{fig:output}
+	\label{fig:cta_gui}
 \end{figure}
 
 \paragraph{sequence upload/download:}
 The widgets in the section \emph{sequence upload/download} can be used
-to upload the sequence from the IOC to the sequence definition table
-or to download the sequence in the sequence definition table to the IOC.
+to upload and download the sequence.
 A widget indicates whether the sequence in the sequence definition table
 and the sequence on the IOC are equal or not.
 
@@ -215,7 +263,91 @@ The widgets in the \emph{run status} section can be used to start or stop
 event code sending of the CTA. The \emph{status} widget shows the current
 status of the CTA.
 
-\section{Sequence definition examples}\label{sec:Examples}
+\subsection{Channel access}
+
+Table \ref{tab:cta_public_pvs} lists the public PVs of CTA. Note, that currently
+only one sequence is supported. \$(P) is the device name of CTA (e.g. SAR-CCTA-ESA
+for the CTA in ESA).
+
+\begin{table}[!hbt]
+\caption{CTA public PVs}
+\label{tab:cta_public_pvs}
+\centering
+  \begin{tabular}{|c|c|}
+    \hline \textbf{PV name} & \textbf{comment} \\ \hline
+    \hline \$(P):seq0Ser0-Data-I & sequence 0 series 0 (event code 200)\\
+    \hline \$(P):seq0Ser1-Data-I & sequence 0 series 1 (event code 201)\\
+    \hline : & :\\
+    \hline \$(P):seq0Ser19-Data-I & sequence 0 series 19 (event code 219)\\
+    \hline \$(P):seq0Ctrl-Length-I & length of sequence\\
+    \hline \$(P):seq0Ctrl-Cycles-I & number of repetitions (0 = forever, n = n times)\\
+    \hline \$(P):seq0Ctrl-Start-I & start sequece (caput pv 1)\\
+    \hline \$(P):seq0Ctrl-Stop-I& stop sequence (caput pv 1)\\
+    \hline \$(P):seq0Ctrl-IsRunning-O & 0 = stopped, 1 = running\\
+    \hline \$(P):SerMaxLen-O & max length of sequence\\
+    \hline
+  \end{tabular}
+\end{table}
+
+The length of a sequence is the number of machine pulses for which it defines the
+CTA event codes.
+
+Listing \ref{lst:caput} show an example of how to upload and start a simple sequence
+on CTA in ESA.  
+
+\begin{lstlisting}[caption={caput listing}, label={lst:caput}, linewidth=\columnwidth]
+caput SAR-CCTA-ESA:seq0Ser0-Data-I "1 0 1"
+caput SAR-CCTA-ESA:seq0Ser1-Data-I "0 1 0"
+caput SAR-CCTA-ESA:seq0Ser2-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser3-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser4-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser5-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser6-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser7-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser8-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser9-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser10-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser11-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser12-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser13-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser14-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser15-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser16-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser17-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser18-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ser19-Data-I "0 0 0"
+caput SAR-CCTA-ESA:seq0Ctrl-Length-I 3
+caput SAR-CCTA-ESA:seq0Ctrl-Cycles-I 1
+caput SAR-CCTA-ESA:seq0Ctrl-Start-I 1
+\end{lstlisting}
+
+\subsection{Python library}
+The python library is available in the PSI python environment.
+Use the following commands to create a CTA library object, upload a sequence
+to the ESA CTA and start it.
+
+\begin{lstlisting}[caption={python CTA lib}, label={lst:python_cta_lib}, language=Python]
+import cta_lib
+
+# create cta lib object
+lib = cta_lib.CtaLib("SAR-CCTA-ESA")
+
+# create sequence
+sequence = {}
+sequence[200] = [1, 0, 1]
+sequence[201] = [0, 1, 0]
+
+# upload
+lib.upload(sequence)
+
+# start (one repetition)
+lib.start(1)
+\end{lstlisting}
+
+Refer to the python docstrings for more information about the available
+operations.
+
+\section{CTA usage examples}\label{sec:CtaExampes}
 This section provides some examples of CTA GUI configurations together
 with the resulting sequence of event codes.
 
@@ -226,6 +358,5 @@ with the resulting sequence of event codes.
 	\caption{GUI and resulting event code sequence}
 	\label{fig:pulser_generic}
 \end{figure}
-
 
 \end{document}
