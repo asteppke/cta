@@ -3,7 +3,7 @@ The complex triggering application (CTA) is an application which allows the
 user to inject a user defined sequence of events in a subtree of the timing
 tree.
 The CTA runs on an IOC. There are two ways to program and control it.
-The first is a GUI and the second is this python library.
+The first is via the GUI and the second is this python library.
 """
 import logging
 import time
@@ -515,7 +515,7 @@ class CtaLib:
         Callback function used internally to do connection status housekeeping
 
         Arguments
-        pvname: name of PV for which the callbak is called
+        pvname: name of PV for which the callback is called
         conn: status of the connection
         """
 
