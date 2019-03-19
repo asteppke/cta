@@ -4,6 +4,7 @@
 
 #include <devSup.h>
 #include <aoRecord.h>
+#include <aiRecord.h>
 #include <longoutRecord.h>
 #include <longinRecord.h>
 #include <boRecord.h>
@@ -19,6 +20,7 @@
 #include <recGbl.h>
 
 #include <string.h>
+#include <inttypes.h>
 
 /* tracing */
 static int devSeqCtrlTraceLevel = TRACE_LEVEL_NONE;
@@ -61,16 +63,18 @@ long DevSeqCtrlInitAo(aoRecord *record) {
 /* write */
 long DevSeqCtrlWriteAo(aoRecord *record) {
   int status = 0;
-  StartOfSeq *evt = NULL;
+  PulseIdEvt *evt = NULL;
 
   TRACE_DEBUG(tp, ("%s: record <<%s>> writes to C%d S%d",
         __func__, record->name, record->out.value.vmeio.card,
         record->out.value.vmeio.signal));
 
 
-  evt = Q_NEW(StartOfSeq, SOS_SIG);
+  evt = Q_NEW(PulseIdEvt, SOS_SIG);
   evt->pulse_id = (uint64_t) record->val;
   QACTIVE_POST(AO_SeqCtrl, &evt->super, NULL);
+
+  TRACE_DEBUG(tp, ("%s posted SOS_SIG (pulseId=%" PRIu64 ")", __func__, evt->pulse_id));
 
   return status;
 }
@@ -304,6 +308,150 @@ long  devSeqCtrlGetIointInfo(int cmd, struct dbCommon* com, IOSCANPVT *iospvt) {
   return 0;
 }
 
+/***************** ai *****************/
+
+/* forward declarations */
+long devSeqCtrlInitAi(aiRecord *record);
+long devSeqCtrlReadAi(aiRecord *record);
+long devSeqCtrlGetIointInfoAi(int cmd, struct dbCommon* com, IOSCANPVT *iospvt);
+
+/* types */
+typedef struct {
+  double value;
+  IOSCANPVT sio;
+} AiGlue;
+
+typedef struct {
+  int card;
+  int signal;
+  AiGlue *glue;
+} AiPriv;
+
+/* local objects */
+static AiGlue s_ai_glue[1];
+
+/* global functions */
+void SeqCtrl_SetStartedAt(uint64_t pulseId) {
+  TRACE_INFO(tp, ("%s running (pulseId=%" PRIu64 ")", __func__, pulseId));
+  s_ai_glue[0].value = (double) pulseId;
+  scanIoRequest(s_ai_glue[0].sio);
+}
+
+/* dset */
+struct {
+  long number;
+  DEVSUPFUN report;
+  DEVSUPFUN init;
+  DEVSUPFUN init_record;
+  DEVSUPFUN get_ioint_info;
+  DEVSUPFUN read_ai;
+  DEVSUPFUN special_linconv;
+} DevSeqCtrlAi = {
+  6,
+  NULL,
+  NULL,
+  devSeqCtrlInitAi,
+  devSeqCtrlGetIointInfoAi,
+  devSeqCtrlReadAi,
+  NULL
+};
+epicsExportAddress(dset, DevSeqCtrlAi);
+
+/* init */
+long devSeqCtrlInitAi(aiRecord *record) {
+  long rv = 0;
+  AiPriv *priv = NULL;
+  
+  TRACE_INFO(tp, ("%s #%s#: running", __func__, record->name));
+
+  /* check arguments */
+  if (record->inp.type != VME_IO) {
+    errlogSevPrintf(errlogFatal, "%s #%s#: illegal INP link "
+        "type\n", __func__, record->name);
+    return -1;
+  }
+  switch (record->inp.value.vmeio.signal) {
+    case 0:
+      break;
+    default:
+      errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
+          "number %d\n", __func__, record->name,
+          record->inp.value.vmeio.signal);
+      return S_dev_badSignalNumber;
+  }
+
+  /* alloc memory */
+  priv = malloc(sizeof(AiPriv));
+  if (!priv) {
+    errlogSevPrintf(errlogFatal, "%s #%s#: out of memory\n", __func__,
+        record->name);
+    return S_dev_noMemory;
+  }
+
+  /* assign fields of private struct */
+  priv->card = record->inp.value.vmeio.card;
+  priv->signal = record->inp.value.vmeio.signal; 
+  switch (priv->signal) {
+    case 0:
+      priv->glue = &s_ai_glue[0];
+      break;
+    default:
+      errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
+          "number %d\n", __func__, record->name, priv->signal);
+      return S_dev_badSignalNumber;
+  }
+
+  /* save private struct */
+  record->dpvt = priv;
+
+  return rv;
+}
+
+/* read */
+long devSeqCtrlReadAi(aiRecord *record) {
+  long rv = 2; /* makes EPICS not call linear convert function */
+  AiPriv *priv = (AiPriv *) record->dpvt;
+
+  /* check for init */
+  if (!priv) {
+    recGblSetSevr(record, UDF_ALARM, INVALID_ALARM);
+    errlogSevPrintf(errlogFatal, "%s #%s#: record not initialized "
+        "correctly\n", __func__, record->name);
+    return -1;
+  }
+
+  /* trace */
+  TRACE_INFO(tp, ("%s #%s#: reading from C%d S%d, value=%f",
+        __func__, record->name, priv->card, priv->signal, priv->glue->value));
+
+  /* get value */
+  record->val = priv->glue->value;
+
+  return rv;
+}
+
+/* iointinfo */
+long devSeqCtrlGetIointInfoAi(int cmd, struct dbCommon* com, IOSCANPVT *iospvt) {
+  long rv = 0;
+  AiPriv *priv = (AiPriv *) com->dpvt;
+
+  /* check for init */
+  if (!priv) {
+    recGblSetSevr(com, UDF_ALARM, INVALID_ALARM);
+    errlogSevPrintf(errlogFatal, "%s #%s#: record not initialized "
+        "correctly\n", __func__, com->name);
+    return -1;
+  }
+
+  /* trace */
+  TRACE_INFO(tp, ("%s #%s#: running", __func__, com->name));
+
+  /* provide IOSCANPVT */
+  *iospvt = priv->glue->sio;
+
+  return rv;
+}
+
 /**************** bo ******************/
 
 /* forward declarations */
@@ -394,6 +542,10 @@ static void DevSeqCtrlInitHook(initHookState state) {
       /* 3 IsRunning */
       scanIoInit(&s_longin_glue[3].sio);
       s_longin_glue[3].value = 0;     
+
+      /* ai 0 StartAt */
+      scanIoInit(&s_ai_glue[0].sio);
+      s_ai_glue[0].value = 0;     
 
       break;
     default:

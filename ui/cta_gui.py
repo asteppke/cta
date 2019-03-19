@@ -427,6 +427,7 @@ class SequenceDialog(QWidget):
         self.pvStart = PV(args.device + ':seq0Ctrl-Start-I')
         self.pvStop = PV(args.device + ':seq0Ctrl-Stop-I')
         self.pvStatus = PV(args.device + ':seq0Ctrl-IsRunning-O')
+        self.pvStartedAt = PV(args.device + ':seq0Ctrl-StartedAt-O')
 
         # create widgets
         self.createWidgets()
@@ -439,13 +440,16 @@ class SequenceDialog(QWidget):
         self.__btnInsertRow.clicked.connect(self.btnInsertRowAction)
         self.__btnRemoveRow.clicked.connect(self.btnRemoveRowAction)
         self.connect(self, SIGNAL("seqCtrlStatusChange"), self.emitStatusChange)
+        self.connect(self, SIGNAL("seqCtrlStartedAtChange"), self.emitStartedAtChange)
         self.connect(self, SIGNAL("uploadSequence"), self.uploadSequence)
 
         # add pv monitor callbacks
         self.pvStatus.add_callback(self.__on_pv_status_changes)
+        self.pvStartedAt.add_callback(self.__on_pv_started_at_changes)
 
         # ensure status of gui is updated after start up
         self.emit(SIGNAL("seqCtrlStatusChange"))
+        self.emit(SIGNAL("seqCtrlStartedAtChange"))
         self.emit(SIGNAL("uploadSequence"))
 
     def createWidgets(self):
@@ -506,6 +510,9 @@ class SequenceDialog(QWidget):
         self.__btnStop = QPushButton('stop', self)
         self.__labelStatus = QLabel('status', self)
         self.__leditStatus = QLineEdit(self)
+        self.__labelStartedAt = QLabel('started at', self)
+        self.__leditStartedAt = QLineEdit(self)
+        self.__leditStartedAt.setDisabled(True)
         self.__grpb_run_status = QGroupBox('run status', self)
         self.__leditStatus.setDisabled(True)
         vbl = QVBoxLayout()
@@ -516,6 +523,10 @@ class SequenceDialog(QWidget):
         hbl = QHBoxLayout()
         hbl.addWidget(self.__labelStatus)
         hbl.addWidget(self.__leditStatus)
+        vbl.addLayout(hbl)
+        hbl = QHBoxLayout()
+        hbl.addWidget(self.__labelStartedAt)
+        hbl.addWidget(self.__leditStartedAt)
         vbl.addLayout(hbl)
         self.__grpb_run_status.setLayout(vbl)
         vertical1_layout.addWidget(self.__grpb_run_status)
@@ -637,6 +648,15 @@ class SequenceDialog(QWidget):
 
         logging.info('SequenceDialog.leaving emitStatusChange')
 
+    def emitStartedAtChange(self):
+
+        logging.info('SequenceDialog.emitStartedAtChange is running')
+
+        # get new startedAt value and set widget
+        self.__leditStartedAt.setText(str(int(self.pvStartedAt.get())))
+
+        logging.info('SequenceDialog.leaving emitStartedAtChange')
+
     def uploadSequence(self):
 
         logging.info('SequenceDialog.uploadSequence() is running')
@@ -704,6 +724,10 @@ class SequenceDialog(QWidget):
         logging.info('pv status has changed, value=' + str(value))
         self.emit(SIGNAL("seqCtrlStatusChange"), value)
 
+    def __on_pv_started_at_changes(self, pvname=None, value=None, char_value=None,
+        **kw):
+        logging.info('pv startedAt has changed, value=' + str(value))
+        self.emit(SIGNAL("seqCtrlStartedAtChange"), value)
 
     def setCompare(self, state):
 

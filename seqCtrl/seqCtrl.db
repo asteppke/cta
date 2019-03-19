@@ -3,6 +3,7 @@
 #  P      -> used as prefix for all record names
 #  FLOAD  -> used to forward load command
 #  FINDEX -> used to forward index command
+#  PULSE_ID_READ -> name of record to read pulse id from
 #
 # Optional macros
 #  FRUNNING -> used to forward running command (default="")
@@ -28,6 +29,9 @@ record(ao, "$(P)SOS-I") {
 
   field(DTYP, "DevSeqCtrl")
   field(OUT, "#C0 S0")
+
+  field(OMSL, "closed_loop")
+  field(DOL, "$(PULSE_ID_READ)")
 
   field(TPRO, "$(TRA=0)")
 
@@ -108,6 +112,19 @@ record(longin, "$(P)SOP_") {
   field(SCAN, "I/O Intr")
 
   field(FLNK, "$(FINDEX)")
+
+  field(PRIO, "HIGH")
+
+  field(TPRO, "$(TRA=0)")
+
+}
+
+record(ai, "$(P)StartedAt-O") {
+
+  field(DTYP, "DevSeqCtrl")
+  field(INP, "#C0 S0")
+
+  field(SCAN, "I/O Intr")
 
   field(PRIO, "HIGH")
 

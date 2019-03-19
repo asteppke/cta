@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<model version="4.0.3" links="0">
+<model version="4.3.1" links="0">
  <framework name="qpc"/>
  <package name="Events" stereotype="0x01">
-  <class name="StartOfSeq" superclass="qpc::QEvt">
+  <class name="PulseIdEvt" superclass="qpc::QEvt">
    <attribute name="pulse_id" type="uint64_t" visibility="0x00" properties="0x00"/>
   </class>
  </package>
@@ -34,12 +34,14 @@ QS_SIG_DICTIONARY(SOP_SIG, (void *)0);</action>
     <state name="root">
      <tran trig="SOS">
       <action brief="QACTIVE_POST_LIFO(SOP); QACTIVE_POST_LIFO(STEP);">QEvent *evt = NULL;
+PulseIdEvt *pulseIdEvt = NULL;
 
 evt = Q_NEW(QEvt, SOP_SIG);
 QACTIVE_POST_LIFO(AO_SeqCtrl, evt);
 
-evt = Q_NEW(QEvt, STEP_SIG);
-QACTIVE_POST_LIFO(AO_SeqCtrl, evt);
+pulseIdEvt = Q_NEW(PulseIdEvt, STEP_SIG);
+pulseIdEvt-&gt;pulse_id = Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id;
+QACTIVE_POST_LIFO(AO_SeqCtrl, &amp;pulseIdEvt-&gt;super);
 </action>
       <tran_glyph conn="2,88,3,-1,45">
        <action box="0,-2,45,3"/>
@@ -85,8 +87,13 @@ me-&gt;length = GetLength();</entry>
        <tran trig="STEP">
         <choice target="../../../3">
          <guard brief="(length &gt; 0) &amp;&amp; (cycles &gt;= 0)">(me-&gt;length &gt; 0) &amp;&amp; (me-&gt;cycles &gt;= 0)</guard>
+         <action brief="SeqCtrl_SetStartedAt(pulse_id)">SeqCtrl_SetStartedAt(Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id + 2); /* SOS event is dispatched  before puse id of the sequence */
+                                                            /* is received. So the pulse id of the event is from the last */
+                                                            /* pulse. The sequence is programmed to the HW in this pulse */
+                                                            /* but the HW plays it out in the next sequence. Hence, the */
+                                                            /* sequence will be started two pulses after the pulse id */</action>
          <choice_glyph conn="79,46,4,0,5">
-          <action box="1,0,20,3"/>
+          <action box="1,0,24,5"/>
          </choice_glyph>
         </choice>
         <tran_glyph conn="79,41,2,-1,5">
@@ -180,7 +187,7 @@ $declare(AOs::SeqCtrl)
 static SeqCtrl l_seqCtrl;   /* storage for seqCtrl */
 static QEvt const * l_SeqCtrlQueueSto[10];
 static QF_MPOOL_EL(QEvt) l_qEvt[10];
-static QF_MPOOL_EL(StartOfSeq) l_evtStoStartOfSeq[10];
+static QF_MPOOL_EL(PulseIdEvt) l_evtStoStartOfSeq[10];
 
 /* Global objects ----------------------------------------------------------*/
 QMActive * const AO_SeqCtrl = &amp;l_seqCtrl.super;
@@ -215,7 +222,7 @@ enum SeqCtrl {
     MAX_SIG
 };
 
-$declare(Events::StartOfSeq)
+$declare(Events::PulseIdEvt)
 
 /* data */
 $declare(AOs::SetLength)
@@ -227,6 +234,7 @@ extern void SeqCtrl_SetIndex(uint32_t index);
 extern void SeqCtrl_SetLoad(long dummy);
 extern void SeqCtrl_SetSop(long dummy);
 extern void SeqCtrl_SetIsRunning(long is_running);
+extern void SeqCtrl_SetStartedAt(uint64_t pulse_id);
 
 /* active object */
 $declare(AOs::SeqCtrl_ctor)
