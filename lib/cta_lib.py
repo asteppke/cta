@@ -89,7 +89,7 @@ class CtaLib:
         # wait for the connections to be established
         if not self._event.wait(timeout=5.0):
             raise RuntimeError('Some PV(s) is/are not connected')
-        time.sleep(1) # NOTE02
+        time.sleep(1) # NOTE01
 
         # logging
         for i in range(0, self._constants['num_of_event_codes']):
@@ -103,9 +103,30 @@ class CtaLib:
 
         logging.info('__del__() is running')
 
-        del self._pvs
-
         logging.info('__del__() is done')
+
+    def disconnect_pvs(self):
+        """
+        Disconnect all pvs
+
+        Actually this should be done in the destructor.
+        If we do we get the following error message:
+          FATAL: exception not rethrown
+          CA client library tcp receive thread terminating due to a
+          non-standard C++ exception
+        Reason unknown.
+        """
+        logging.info('disconnect_pvs is running')
+
+        # disconnect connections and clear all callbacks
+        for k, v in self._pvs.items():
+            if k == 'Data-I':
+                for i in range(0, self._constants['num_of_event_codes']):
+                    v[i].disconnect()
+            else:
+                v.disconnect()
+
+        logging.info('disconnect_pvs is done')
 
     def get_max_length(self):
         """
@@ -286,8 +307,6 @@ class CtaLib:
         # start
         self._pvs['Ctrl-Start-I'].put(1, wait=True)
 
-        time.sleep(3) # => NOTE01
-
         logging.info('start() is done')
 
     def stop(self):
@@ -304,9 +323,6 @@ class CtaLib:
             raise RuntimeError('Some PV(s) is/are not connected')
 
         self._pvs['Ctrl-Stop-I'].put(1, wait=True)
-
-        # stop
-        time.sleep(3) # => NOTE01
 
         logging.info('stop() is done')
 
@@ -539,14 +555,6 @@ class CtaLib:
         logging.info('_connection_callback() is done')
 
 # NOTE01
-# This sleep is needed for unknown reasons.
-# If it is not there, we get the following error if the lib object
-# goes out of scope after start():
-#   FATAL: exception not rethrown
-#   CA client library tcp receive thread terminating due to a non-standard C++ exception
-#   Aborted
-#
-# NOTE02
 # This sleep is needed for the initial ca communication to be completed.
 # If it is not there and the upload is called right after object creation,
 # the number of elements in the PV has not arrived in python for all PVs.

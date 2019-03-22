@@ -1,6 +1,7 @@
 import cta_lib
 import argparse
 import time
+import sys
 
 def status_callback_1(value):
   print(">> status callback 1 has been called (value=" + str(value) + ")")
@@ -27,6 +28,11 @@ if __name__ == '__main__':
 
   # create cta lib object
   lib = cta_lib.CtaLib(args.device, log_level=args.loglevel)
+
+  # exit if the cta is already running
+  if lib.is_running():
+    raise RuntimeError('cta is already running')
+    sys.exit()
 
   # register callbacks
   lib.register_status_callback(status_callback_1)
@@ -62,12 +68,16 @@ if __name__ == '__main__':
   lib.upload(sequence)
 
   # start
-  print(">> starting (20 repetition)")
-  lib.start(20)
+  print(">> starting (10 repetition)")
+  lib.start(10)
+  time.sleep(0.2) # wait for the cta to process the start command
 
   # poll for completion
   while lib.is_running():
     print(">> still running")
     time.sleep(1)
   print(">> run has completed")
+
+  # disconect pvs
+  lib.disconnect_pvs()
 

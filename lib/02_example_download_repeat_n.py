@@ -1,5 +1,7 @@
 import cta_lib
+import time
 import argparse
+import sys
 
 if __name__ == '__main__':
   
@@ -15,6 +17,12 @@ if __name__ == '__main__':
   # create cta lib object
   lib = cta_lib.CtaLib(args.device, log_level=args.loglevel)
 
+  # exit if the cta is already running
+  if lib.is_running():
+    raise RuntimeError('cta is already running')
+    sys.exit()
+
+  # create sequence
   sequence = {}
 
   series = [0] * 200
@@ -34,4 +42,14 @@ if __name__ == '__main__':
   # start
   print(">> starting (10 repetitions)")
   lib.start(10)
+  time.sleep(0.2) # wait for the cta to process the start command
+
+  # poll for completion
+  while lib.is_running():
+    print(">> still running")
+    time.sleep(1)
+  print(">> run has completed")
+
+  # disconect pvs
+  lib.disconnect_pvs()
 
