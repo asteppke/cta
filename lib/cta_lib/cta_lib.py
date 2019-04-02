@@ -119,12 +119,12 @@ class CtaLib:
         logging.info('disconnect_pvs is running')
 
         # disconnect connections and clear all callbacks
-        for k, v in self._pvs.items():
-            if k == 'Data-I':
+        for key, pv in self._pvs.items(): # pylint: disable=C0103
+            if key == 'Data-I':
                 for i in range(0, self._constants['num_of_event_codes']):
-                    v[i].disconnect()
+                    pv[i].disconnect()
             else:
-                v.disconnect()
+                pv.disconnect()
 
         logging.info('disconnect_pvs is done')
 
