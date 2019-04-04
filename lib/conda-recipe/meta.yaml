@@ -1,0 +1,22 @@
+package:
+    name: cta_lib
+    version: 1.0.0
+
+source:
+    path: ..
+
+requirements:
+    build:
+        - python
+        - setuptools
+    run:
+        - python
+        - pyepics
+        - numpy
+
+build:
+ entry_points:
+
+about:
+    home: https://git.psi.ch/epics_ioc_modules/cta
+    summary: "python library to interact with cta app on IOC"
