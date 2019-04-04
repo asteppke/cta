@@ -28,7 +28,7 @@ class CtaLib:
         self._constants = dict()
         self._constants['event_code_range_base'] = 200
         self._constants['num_of_event_codes'] = 20
-        self._constants['num_of_pvs'] = 26
+        self._constants['num_of_pvs'] = 27
 
         # setup logging
         numeric_level = getattr(logging, log_level.upper(), None)
@@ -76,6 +76,11 @@ class CtaLib:
         self._pvs['Ctrl-IsRunning-O'] = PV(
             pv_name,
             callback=self._status_callback,
+            connection_callback=self._connection_callback)
+
+        pv_name = device + ':seq' + str(sequence) + 'Ctrl-StartedAt-O'
+        self._pvs['Ctrl-StartedAt-O'] = PV(
+            pv_name,
             connection_callback=self._connection_callback)
 
         self._pvs['Data-I'] = list()
@@ -347,6 +352,29 @@ class CtaLib:
         logging.info('is_running() is done')
 
         return is_running
+
+    def get_started_at(self):
+        """
+        This function can be used to get the pulse id when the last sequence
+        was started.
+
+        Return
+        started_at: pulse id when last sequence was started
+        """
+
+        logging.info('get_started_at() is running')
+
+        # check connections
+        is_all_connected = self._event.wait(timeout=5.0)
+        if not is_all_connected:
+            raise RuntimeError('Some PV(s) is/are not connected')
+
+        # get number of repetitions
+        started_at = self._pvs['Ctrl-StartedAt-O'].get()
+
+        logging.info('get_started_at() is done')
+
+        return int(started_at)
 
     def register_status_callback(self, callback):
         """
