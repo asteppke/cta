@@ -114,7 +114,7 @@ record(fanout, "$(P)Seq2Trig") {
   field(TPRO, "$(TRA=0)")
 }
 
-record(longin, "$(P)SerMaxLen") {
+record(longin, "$(P)SerMaxLen-O") {
 
   field(PINI, "YES")
 

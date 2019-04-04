@@ -51,8 +51,8 @@ class CtaLib:
         # create pv objects
         self._pvs = dict()
 
-        pv_name = device + ':SerMaxLen'
-        self._pvs['SerMaxLen'] = PV(
+        pv_name = device + ':SerMaxLen-O'
+        self._pvs['SerMaxLen-O'] = PV(
             pv_name,
             connection_callback=self._connection_callback)
 
@@ -143,7 +143,7 @@ class CtaLib:
             raise RuntimeError('Some PV(s) is/are not connected')
 
         # get max length
-        max_length = self._pvs['SerMaxLen'].get()
+        max_length = self._pvs['SerMaxLen-O'].get()
 
         logging.info('get_max_length() is done')
 
@@ -420,7 +420,7 @@ class CtaLib:
 
         # check that series are not too long
         length = len(seq[list(seq)[0]])
-        if length > self._pvs['SerMaxLen'].get():
+        if length > self._pvs['SerMaxLen-O'].get():
             raise RuntimeError(
                 "dictionary contains key value pair where the values "
                 "are lists with too many elements")
