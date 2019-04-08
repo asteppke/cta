@@ -31,19 +31,22 @@ def series_callback_2(seq):
     print(">> sequence callback 2 has been called (seq=" + str(seq) + ")")
 
 def main():
+    """
+    The main function contains the example script.
+    """
 
     # setup parser
-    parser = argparse.ArgumentParser() # pylint: disable=invalid-name
+    parser = argparse.ArgumentParser()
     parser.add_argument('device', help='Name of device running CTA.')
     parser.add_argument(
         '-l', '--loglevel', help='Specify level for logging '
         '(used for debugging)'
         , choices=['critical', 'error', 'warning', 'info', 'debug'],
         default='warning')
-    args = parser.parse_args() # pylint: disable=invalid-name
+    args = parser.parse_args()
 
     # create cta lib object
-    lib = cta_lib.CtaLib(args.device, log_level=args.loglevel) # pylint: disable=no-member,invalid-name
+    lib = cta_lib.CtaLib(args.device, log_level=args.loglevel)
 
     # exit if the cta is already running
     if lib.is_running():
@@ -56,7 +59,7 @@ def main():
     lib.register_series_callback(series_callback_2)
 
     # create sequence
-    sequence = {} # pylint: disable=invalid-name
+    sequence = {}
     sequence[200] = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     sequence[201] = [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     sequence[202] = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]

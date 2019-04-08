@@ -7,33 +7,36 @@ import argparse
 import cta_lib
 
 def main():
+    """
+    The main function contains the example script.
+    """
 
     # setup parser
-    parser = argparse.ArgumentParser() # pylint: disable=invalid-name
+    parser = argparse.ArgumentParser()
     parser.add_argument('device', help='Name of device running CTA.')
     parser.add_argument(
         '-l', '--loglevel', help='Specify level for logging '
         '(used for debugging)'
         , choices=['critical', 'error', 'warning', 'info', 'debug'],
         default='warning')
-    args = parser.parse_args() # pylint: disable=invalid-name
+    args = parser.parse_args()
 
     # create cta lib object
-    lib = cta_lib.CtaLib(args.device, log_level=args.loglevel) # pylint: disable=no-member,invalid-name
+    lib = cta_lib.CtaLib(args.device, log_level=args.loglevel)
 
     # exit if the cta is already running
     if lib.is_running():
         raise RuntimeError('cta is already running')
 
     # create sequence
-    sequence = {} # pylint: disable=invalid-name
+    sequence = {}
 
-    series = [0] * 200 # pylint: disable=invalid-name
+    series = [0] * 200
     for i in range(100):
         series[i] = 1
     sequence[200] = series
 
-    series = [0] * 200 # pylint: disable=invalid-name
+    series = [0] * 200
     for i in range(100, 200):
         series[i] = 1
     sequence[201] = series
