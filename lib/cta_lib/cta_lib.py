@@ -46,7 +46,7 @@ class CtaLib:
 
         # create attributes for callback support
         self._run_status_callbacks = list()
-        self._series_callbacks = list()
+        self._sequence_callbacks = list()
 
         # create pv objects
         self._pvs = dict()
@@ -89,7 +89,7 @@ class CtaLib:
             pv_name = device + ':seq' + str(sequence) + 'Ser' + str(i) + '-Data-I'
             self._pvs['Data-I'].append(PV(
                 pv_name,
-                callback=self._series_callback,
+                callback=self._sequence_callback,
                 connection_callback=self._connection_callback))
 
         # wait for the connections to be established
@@ -401,22 +401,28 @@ class CtaLib:
         rs_cb['user_object'] = user_object
         self._run_status_callbacks.append(rs_cb)
 
-    def register_series_callback(self, callback):
+    def register_sequence_callback(self, callback, user_object):
         """
         This function can be used to register a callback function which is
-        called if a series of the sequence on the IOC has changed.
+        called if the sequence on the IOC has changed.
 
         Refer to the upload method for a definition of a sequence.
 
         The following arguments will be passed to the callback function:
             sequence: sequence containing the series which has changed
+            user_object: the argument which was provided on register
 
         Keep your callback function short.
 
         Arguments
         callback: Function to be called
+        user_object: object to be passed to callback function
         """
-        self._series_callbacks.append(callback)
+
+        seq_cb = {}
+        seq_cb['callback'] = callback
+        seq_cb['user_object'] = user_object
+        self._sequence_callbacks.append(seq_cb)
 
     def check_sequence(self, seq):
         """
@@ -545,13 +551,13 @@ class CtaLib:
             scb['callback'](data, scb['user_object'])
         logging.info('calling run status callbacks done')
 
-    def _series_callback(self, **kwargs):
+    def _sequence_callback(self, **kwargs):
         """
         Callback function which is called when one of the PVs holding a series of
         the sequence changes the value. It is used to call user callback functions which
         registered for this event.
         """
-        logging.info('_series_callback() is running (pv=' + kwargs['pvname'] +
+        logging.info('_sequence_callback() is running (pv=' + kwargs['pvname'] +
                      ', value=' + str(kwargs['value']))
 
         # determine event number from pvname
@@ -566,11 +572,11 @@ class CtaLib:
 
         # call callbacks
         logging.info('calling sequence callbacks next')
-        for callback in self._series_callbacks:
-            callback(seq)
+        for seq_cb in self._sequence_callbacks:
+            seq_cb['callback'](seq, seq_cb['user_object'])
         logging.info('calling sequence callbacks done')
 
-        logging.info('_series_callback() is done')
+        logging.info('_sequence_callback() is done')
 
     def _connection_callback(self, **kwargs):
         """

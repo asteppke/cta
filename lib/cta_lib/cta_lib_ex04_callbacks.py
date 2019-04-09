@@ -34,17 +34,17 @@ def run_status_callback_2(data, lib):
         started_at = lib.get_started_at()
         print('>> the sequence started at pulse id ' + str(started_at))
 
-def series_callback_1(seq):
+def sequence_callback_1(sequence, user_object):
     """
     function to demonstrate callaback functionality
     """
-    print(">> sequence callback 1 has been called (seq=" + str(seq) + ")")
+    print(">> sequence callback 1 has been called (sequence=" + str(sequence) + ")")
 
-def series_callback_2(seq):
+def sequence_callback_2(sequence, user_object):
     """
     function to demonstrate callaback functionality
     """
-    print(">> sequence callback 2 has been called (seq=" + str(seq) + ")")
+    print(">> sequence callback 2 has been called (sequence=" + str(sequence) + ")")
 
 def main():
     """
@@ -71,8 +71,8 @@ def main():
     # register callbacks
     lib.register_run_status_callback(run_status_callback_1, lib)
     lib.register_run_status_callback(run_status_callback_2, lib)
-    lib.register_series_callback(series_callback_1)
-    lib.register_series_callback(series_callback_2)
+    lib.register_sequence_callback(sequence_callback_1, lib)
+    lib.register_sequence_callback(sequence_callback_2, lib)
 
     # create sequence
     sequence = {}
