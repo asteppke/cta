@@ -36,7 +36,7 @@ class CtaLib:
             raise ValueError('Invalid log_level: %s' % log_level)
         logging.basicConfig(level=numeric_level,
                             format='%(asctime)s | %(levelname)8s | %(message)s')
-        logging.info('__init__() is running (device=' + device +')')
+        logging.info('__init__() is running (device=%s', device)
 
         # create threading event
         self._event = threading.Event()
@@ -99,7 +99,7 @@ class CtaLib:
 
         # logging
         for i in range(0, self._constants['num_of_event_codes']):
-            logging.debug('NORD of ' + str(i) + ':' + str(self._pvs['Data-I'][i]))
+            logging.debug('NORD of %d: %s', i, str(self._pvs['Data-I'][i]))
         logging.info('__init__() is done')
 
     def __del__(self):
@@ -205,7 +205,7 @@ class CtaLib:
         seq = self.fill_empty_series(seq)
 
         # logging
-        logging.debug('upload() upload: ' + str(seq))
+        logging.debug('upload() upload: %s', str(seq))
 
         # check connections
         is_all_connected = self._event.wait(timeout=5.0)
@@ -242,12 +242,12 @@ class CtaLib:
         # download
         seq = {}
         for i in range(0, self._constants['num_of_event_codes']):
-            logging.debug('NORD of ' + str(i) + ':' + str(self._pvs['Data-I'][i]))
+            logging.debug('NORD of %d: %s', i, str(self._pvs['Data-I'][i]))
             seq[self._constants['event_code_range_base'] + i] = numpy.atleast_1d(
                 self._pvs['Data-I'][i].get()).tolist()
 
         # logging
-        logging.debug('download() downloaded: ' + str(seq))
+        logging.debug('download() downloaded: %s', str(seq))
 
         # check the sequence
         self.check_sequence(seq)
@@ -299,7 +299,7 @@ class CtaLib:
                      defaut: do not set number of repetitions, last value on IOC will be used
         """
 
-        logging.info('start() is running (repetitions=' + str(repetitions) + ')')
+        logging.info('start() is running (repetitions=%d)', repetitions)
 
         # check connections
         is_all_connected = self._event.wait(timeout=5.0)
@@ -449,7 +449,7 @@ class CtaLib:
                 raise RuntimeError("dictionary contains key value pair where value is"
                                    " not a list")
             for item in series:
-                if item != 0 and item != 1:
+                if item not in (0, 1):
                     raise RuntimeError(
                         "dictionary contains key value pair where value is"
                         " is a list with at least one element which is not 0 or 1")
@@ -508,7 +508,7 @@ class CtaLib:
         """
 
         logging.info('print() is running')
-        logging.debug('print() prints: ' + str(seq))
+        logging.debug('print() prints: %s', str(seq))
 
         # check the sequence
         self.check_sequence(seq)
@@ -536,8 +536,8 @@ class CtaLib:
         It is used to call user callback functions which registered for
         for this event.
         """
-        logging.info('_run_status_callabck() is running (pv=' +
-                     kwargs['pvname'] + ', value=' + str(kwargs['value']) + ')')
+        logging.info('_run_status_callabck() is running (pv=%s, value=%s)',
+                     kwargs['pvname'], str(kwargs['value']))
 
         if kwargs['pvname'] == self._pvs['Ctrl-IsRunning-O'].pvname:
             data = {'status': int(kwargs['value'])}
@@ -557,8 +557,8 @@ class CtaLib:
         the sequence changes the value. It is used to call user callback functions which
         registered for this event.
         """
-        logging.info('_sequence_callback() is running (pv=' + kwargs['pvname'] +
-                     ', value=' + str(kwargs['value']))
+        logging.info('_sequence_callback() is running (pv=%s, value=%s)',
+                     kwargs['pvname'], str(kwargs['value']))
 
         # determine event number from pvname
         for idx, pv in enumerate(self._pvs['Data-I']): # pylint: disable=C0103
@@ -587,16 +587,16 @@ class CtaLib:
         conn: status of the connection
         """
 
-        logging.info('_connection_callback() is running (pvname=' + kwargs['pvname'] +
-                     ', conn=' + repr(kwargs['conn']) + ', thread_id=' +
-                     str(threading.get_ident()) +')')
+        logging.info('_connection_callback() is running (pvname=%s, conn=%s, '
+                     'thread_id=%s)', kwargs['pvname'], repr(kwargs['conn']),
+                     str(threading.get_ident()))
 
         # do connection housekeeping
         if kwargs['conn']:
             self._num_connected += 1
         else:
             self._num_connected -= 1
-        logging.debug('_num_connected=' + str(self._num_connected))
+        logging.debug('_num_connected=%d', self._num_connected)
 
         # signal to other thread
         if self._num_connected == self._constants['num_of_pvs']:
