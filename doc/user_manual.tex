@@ -323,7 +323,8 @@ caput SAR-CCTA-ESA:seq0Ctrl-Start-I 1
 \end{lstlisting}
 
 \subsection{Python library}
-The python library is available in the PSI python environment.
+The python library is available in the PSI python 3.6 environment. You can get
+this environment with the following command: source /opt/gfa/python 3.6
 Use the following commands to create a CTA library object, upload a sequence
 to the ESA CTA and start it.
 
@@ -347,6 +348,19 @@ lib.start(1)
 
 Refer to the python docstrings for more information about the available
 operations.
+Furthermore a few example scripts which demonstrate the usage of the python
+library are available in the PSI python environment.
+\begin{itemize}
+\item
+cta\_lib\_ex01\_upload\_downlaod\_print
+\item
+cta\_lib\_ex02\_upload\_repeat\_n\_wait
+\item
+cta\_lib\_ex03\_upload\_run\_forever\_stop
+\item
+cta\_lib\_ex04\_callbacks
+\end{itemize}
+You can call these scripts from the terminal command line. Use the -h option to get help.
 
 \section{CTA usage examples}\label{sec:CtaExampes}
 This section provides some examples of CTA GUI configurations together
