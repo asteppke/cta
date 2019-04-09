@@ -401,7 +401,7 @@ class SequenceDialog(QWidget):
         self.args = args 
 
         # create pv objects
-        self.pvSerMaxLen = PV(args.device + ':SerMaxLen')
+        self.pvSerMaxLen = PV(args.device + ':SerMaxLen-O')
         self.pvLength = PV(args.device + ':seq0Ctrl-Length-I')
         self.pvCycles = PV(args.device + ':seq0Ctrl-Cycles-I')
         self.pvSeq0Ser0 = PV(args.device + ':seq0Ser0-Data-I')
