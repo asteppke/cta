@@ -45,7 +45,7 @@ class CtaLib:
         self._num_connected = 0
 
         # create attributes for callback support
-        self._status_callbacks = list()
+        self._run_status_callbacks = list()
         self._series_callbacks = list()
 
         # create pv objects
@@ -75,12 +75,13 @@ class CtaLib:
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-IsRunning-O'
         self._pvs['Ctrl-IsRunning-O'] = PV(
             pv_name,
-            callback=self._status_callback,
+            callback=self._run_status_callabck,
             connection_callback=self._connection_callback)
 
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-StartedAt-O'
         self._pvs['Ctrl-StartedAt-O'] = PV(
             pv_name,
+            callback=self._run_status_callabck,
             connection_callback=self._connection_callback)
 
         self._pvs['Data-I'] = list()
@@ -376,20 +377,29 @@ class CtaLib:
 
         return int(started_at)
 
-    def register_status_callback(self, callback):
+    def register_run_status_callback(self, callback, user_object):
         """
         This function can be used to register a callback function which is
-        called if the status of the sequence controller changed.
+        called if the run status of the sequence controller changed.
+        A user object can be provided which will be passed to the callback
+        function when it is called.
 
         The following arguments will be passed to the callback function:
-            value: 1 if sequence is running, 0 otherwise
+            data: dictionary where the key indicates which run status item
+                  has changed and its new value
+            user_object: the argument which was provided on register
 
         Keep your callback function short.
 
         Arguments
         callback: Function to be called.
+        user_object: object to be passed to callback function
         """
-        self._status_callbacks.append(callback)
+
+        rs_cb = {}
+        rs_cb['callback'] = callback
+        rs_cb['user_object'] = user_object
+        self._run_status_callbacks.append(rs_cb)
 
     def register_series_callback(self, callback):
         """
@@ -514,18 +524,26 @@ class CtaLib:
 
         logging.info('print() is done')
 
-    def _status_callback(self, **kwargs):
+    def _run_status_callabck(self, **kwargs):
         """
-        Callback function which is called when the status PV changes the value.
+        Callback function which is called when the run status PVs change the value.
         It is used to call user callback functions which registered for
         for this event.
         """
-        logging.info('_status_callback() is running (value=' + str(kwargs['value']) + ')')
+        logging.info('_run_status_callabck() is running (pv=' +
+                     kwargs['pvname'] + ', value=' + str(kwargs['value']) + ')')
 
-        logging.info('calling status callbacks next')
-        for callback in self._status_callbacks:
-            callback(kwargs['value'])
-        logging.info('calling status callbacks done')
+        if kwargs['pvname'] == self._pvs['Ctrl-IsRunning-O'].pvname:
+            data = {'status': int(kwargs['value'])}
+        elif kwargs['pvname'] == self._pvs['Ctrl-StartedAt-O'].pvname:
+            data = {'started at': int(kwargs['value'])}
+        else:
+            raise RuntimeError('lib received status callback from unexpected pv')
+
+        logging.info('calling run status callbacks next')
+        for scb in self._run_status_callbacks:
+            scb['callback'](data, scb['user_object'])
+        logging.info('calling run status callbacks done')
 
     def _series_callback(self, **kwargs):
         """

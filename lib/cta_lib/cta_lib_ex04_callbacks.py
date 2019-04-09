@@ -6,17 +6,33 @@ import argparse
 import time
 import cta_lib
 
-def status_callback_1(value):
+def run_status_callback_1(data, lib):
     """
     function to demonstrate callaback functionality
     """
-    print(">> status callback 1 has been called (value=" + str(value) + ")")
+    # use data
+    p_v, value = list(data.items())[0]
+    print(">> status callback 1 has been called (pv=" + p_v + ", value=" + str(value) + ")")
 
-def status_callback_2(value):
+    if p_v == 'started at':
+        # get started at
+        print('>> reading back at what pulse id the sequence was started')
+        started_at = lib.get_started_at()
+        print('>> the sequence started at pulse id ' + str(started_at))
+
+def run_status_callback_2(data, lib):
     """
     function to demonstrate callaback functionality
     """
-    print(">> status callback 2 has been called (value=" + str(value) + ")")
+    # use data
+    p_v, value = list(data.items())[0]
+    print(">> status callback 2 has been called (pv=" + p_v + ", value=" + str(value) + ")")
+
+    if p_v == 'started at':
+        # get started at
+        print('>> reading back at what pulse id the sequence was started')
+        started_at = lib.get_started_at()
+        print('>> the sequence started at pulse id ' + str(started_at))
 
 def series_callback_1(seq):
     """
@@ -53,8 +69,8 @@ def main():
         raise RuntimeError('cta is already running')
 
     # register callbacks
-    lib.register_status_callback(status_callback_1)
-    lib.register_status_callback(status_callback_2)
+    lib.register_run_status_callback(run_status_callback_1, lib)
+    lib.register_run_status_callback(run_status_callback_2, lib)
     lib.register_series_callback(series_callback_1)
     lib.register_series_callback(series_callback_2)
 
