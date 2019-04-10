@@ -69,9 +69,15 @@ long DevSeqCtrlWriteAo(aoRecord *record) {
         __func__, record->name, record->out.value.vmeio.card,
         record->out.value.vmeio.signal));
 
-
+  /* SOS event is dispatched  before puse id of the sequence */
+  /* is received. So the pulse id of the event is from the last */
+  /* pulse. The sequence is programmed to the HW in this pulse */
+  /* but the HW plays it out in the next sequence. Hence, the */
+  /* sequence will be started two pulses after the pulse id */
+  /* We distribute the pulse id for which the programming is */
+  /* currently done. */
   evt = Q_NEW(PulseIdEvt, SOS_SIG);
-  evt->pulse_id = (uint64_t) record->val;
+  evt->pulse_id = (uint64_t) record->val + 2;
   QACTIVE_POST(AO_SeqCtrl, &evt->super, NULL);
 
   TRACE_DEBUG(tp, ("%s posted SOS_SIG (pulseId=%" PRIu64 ")", __func__, evt->pulse_id));
@@ -132,6 +138,28 @@ long devSeqCtrlWriteLongout(longoutRecord *record) {
       break;
     case 1:
       SetCycles((uint32_t)record->val);
+      break;
+    case 2:
+      {
+        enum StartMode mode = START_IMMEDIATELY;
+
+        switch((uint32_t)record->val) {
+          case 0: mode = START_IMMEDIATELY; break;
+          case 1: mode = START_MODULO; break;
+          default:
+            errlogSevPrintf(errlogFatal, "%s: record<<%s>>: ilegal start mode\n"
+              , __func__, record->name);
+            status = -1;
+        }
+
+        SetSCfgMode(mode);
+      }
+      break;
+    case 3:
+      SetSCfgModuloDivisor((uint32_t)record->val);
+      break;
+    case 4:
+      SetSCfgModuloOffset((uint32_t)record->val);
       break;
     default:
       errlogSevPrintf(errlogFatal, "%s: record<<%s>>: ilegal signal\n"

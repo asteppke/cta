@@ -61,6 +61,51 @@ record(longout, "$(P)Cycles-I") {
 
 }
 
+# Supported values
+# 0 = start immediately
+# 1 = start modulo
+record(longout, "$(P)SCfgMode-I") {
+
+  field(DESC, "Mode of start configuration")
+
+  field(PINI, "YES")
+  field(DOL, "0")
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#C0 S2")
+
+  field(TPRO, "$(TRA=0)")
+
+}
+
+record(longout, "$(P)SCfgModDivisor-I") {
+
+  field(DESC, "Divisor of modulo start configuration")
+
+  field(PINI, "YES")
+  field(DOL, "1")
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#C0 S3")
+
+  field(TPRO, "$(TRA=0)")
+
+}
+
+record(longout, "$(P)SCfgModOffset-I") {
+
+  field(DESC, "Offset of modulo start configuration")
+
+  field(PINI, "YES")
+  field(DOL, "0")
+
+  field(DTYP, "DevSeqCtrl")
+  field(OUT, "#C0 S4")
+
+  field(TPRO, "$(TRA=0)")
+
+}
+
 record(longin, "$(P)Index-O") {
 
   field(DTYP, "DevSeqCtrl")

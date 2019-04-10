@@ -12,6 +12,7 @@
    <attribute name="length" type="uint32_t" visibility="0x02" properties="0x00"/>
    <attribute name="count" type="uint32_t" visibility="0x02" properties="0x00"/>
    <attribute name="cycles" type="uint32_t" visibility="0x02" properties="0x00"/>
+   <attribute name="sCfg" type="StartConfiguration" visibility="0x02" properties="0x00"/>
    <statechart>
     <initial target="../1/2">
      <action>QS_OBJ_DICTIONARY(&amp;l_seqCtrl);
@@ -27,7 +28,7 @@ QS_SIG_DICTIONARY(STOP_SIG, (void *)0);
 QS_SIG_DICTIONARY(SOS_SIG, (void *)0);
 QS_SIG_DICTIONARY(STEP_SIG, (void *)0);
 QS_SIG_DICTIONARY(SOP_SIG, (void *)0);</action>
-     <initial_glyph conn="4,5,5,0,15,19">
+     <initial_glyph conn="4,5,5,0,15,21">
       <action box="0,-2,6,2"/>
      </initial_glyph>
     </initial>
@@ -59,50 +60,71 @@ me-&gt;count = 0;
 me-&gt;length = 0;
 me-&gt;cycles = 0;</entry>
       <tran trig="START" target="../../3/2">
-       <tran_glyph conn="36,26,1,3,14">
+       <tran_glyph conn="36,28,1,3,22">
         <action box="1,-2,19,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="4,24,32,13">
+      <state_glyph node="4,26,32,13">
        <entry box="1,2,29,5"/>
       </state_glyph>
      </state>
      <state name="running">
-      <entry brief="SeqCtrl_SetIsRunning(1); cycles = GetCycles(); length = GetLength(); ">SeqCtrl_SetIsRunning(1);
+      <entry brief="SeqCtrl_SetLoad(0); SeqCtrl_SetIsRunning(1); cycles = GetCycles(); length = GetLength(); sCfg = GetSCfg();">SeqCtrl_SetLoad(0);
+SeqCtrl_SetIsRunning(1);
 me-&gt;cycles = GetCycles();
-me-&gt;length = GetLength();</entry>
+me-&gt;length = GetLength();
+me-&gt;sCfg = GetSCfg();</entry>
       <exit brief="SeqCtrl_SetIsRunning(0)">SeqCtrl_SetIsRunning(0);</exit>
       <tran trig="STOP" target="../../2">
-       <tran_glyph conn="47,34,3,1,-11">
+       <tran_glyph conn="47,36,3,1,-11">
         <action box="-5,-2,5,2"/>
        </tran_glyph>
       </tran>
       <tran trig="STEP" target="../../2">
-       <tran_glyph conn="47,58,3,2,-33,-21">
+       <tran_glyph conn="47,58,3,2,-33,-19">
         <action box="-12,-3,10,2"/>
        </tran_glyph>
       </tran>
-      <state name="init">
-       <entry brief="SeqCtrl_SetLoad(0);">SeqCtrl_SetLoad(0);</entry>
+      <state name="waiting">
        <tran trig="STEP">
-        <choice target="../../../3">
+        <choice>
          <guard brief="(length &gt; 0) &amp;&amp; (cycles &gt;= 0)">(me-&gt;length &gt; 0) &amp;&amp; (me-&gt;cycles &gt;= 0)</guard>
-         <action brief="SeqCtrl_SetStartedAt(pulse_id)">SeqCtrl_SetStartedAt(Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id + 2); /* SOS event is dispatched  before puse id of the sequence */
-                                                            /* is received. So the pulse id of the event is from the last */
-                                                            /* pulse. The sequence is programmed to the HW in this pulse */
-                                                            /* but the HW plays it out in the next sequence. Hence, the */
-                                                            /* sequence will be started two pulses after the pulse id */</action>
-         <choice_glyph conn="79,46,4,0,5">
-          <action box="1,0,24,5"/>
+         <choice>
+          <guard brief="mode == START_MODULO">(me-&gt;sCfg.mode == START_MODULO)
+</guard>
+          <choice target="../../../../../3">
+           <guard brief="(pulse id % divisor) - offset == 0">((Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id % me-&gt;sCfg.moduloDivisor) - me-&gt;sCfg.moduloOffset) == 0</guard>
+           <action brief="SeqCtrl_SetStartedAt(pulse_id)">SeqCtrl_SetStartedAt(Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id);</action>
+           <choice_glyph conn="81,58,4,0,9">
+            <action box="1,3,31,4"/>
+           </choice_glyph>
+          </choice>
+          <choice target="../../../..">
+           <guard brief="else">else</guard>
+           <choice_glyph conn="81,58,5,1,29,-28,-11">
+            <action box="3,-3,10,2"/>
+           </choice_glyph>
+          </choice>
+          <choice_glyph conn="77,51,5,-1,4,7">
+           <action box="5,0,20,3"/>
+          </choice_glyph>
+         </choice>
+         <choice target="../../../../3">
+          <guard brief="mode == START_IMMEDIATELY">me-&gt;sCfg.mode == START_IMMEDIATELY</guard>
+          <action brief="SeqCtrl_SetStartedAt(pulse_id)">SeqCtrl_SetStartedAt(Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id);</action>
+          <choice_glyph conn="77,51,5,0,-5,16">
+           <action box="-28,0,24,5"/>
+          </choice_glyph>
+         </choice>
+         <choice_glyph conn="77,41,4,-1,10">
+          <action box="1,3,23,4"/>
          </choice_glyph>
         </choice>
-        <tran_glyph conn="79,41,2,-1,5">
-         <action box="0,1,31,7"/>
+        <tran_glyph conn="77,35,2,-1,6">
+         <action box="1,1,31,7"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="50,23,39,18">
-        <entry box="1,2,37,6"/>
-       </state_glyph>
+       <state_glyph node="58,25,41,10"/>
       </state>
       <state name="play">
        <entry brief="SeqCtrl_SetIndex(index); index++; if (index &gt;= length) {index = 0; count++;}">SeqCtrl_SetIndex(me-&gt;index);
@@ -114,31 +136,32 @@ if (me-&gt;index &gt;= me-&gt;length) {
        <tran trig="STEP">
         <choice target="../..">
          <guard brief="(cycles == 0) || (count &lt; cycles)">(me-&gt;cycles == 0) || (me-&gt;count &lt; me-&gt;cycles)</guard>
-         <choice_glyph conn="96,68,5,2,-36,-6">
+         <choice_glyph conn="104,84,5,2,-36,-6">
           <action box="-35,-3,23,2"/>
          </choice_glyph>
         </choice>
-        <tran_glyph conn="90,57,1,-1,6,11">
+        <tran_glyph conn="98,73,1,-1,6,11">
          <action box="0,-2,8,3"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="50,51,40,11">
+       <state_glyph node="58,67,40,11">
         <entry box="1,2,37,5"/>
        </state_glyph>
       </state>
-      <state_glyph node="47,14,61,58">
-       <entry box="1,2,49,2"/>
-       <exit box="1,4,36,2"/>
+      <state_glyph node="47,14,77,73">
+       <entry box="1,2,51,4"/>
+       <exit box="1,6,51,3"/>
       </state_glyph>
      </state>
-     <state_glyph node="2,9,110,87"/>
+     <state_glyph node="2,9,124,87"/>
     </state>
-    <state_diagram size="115,100"/>
+    <state_diagram size="169,120"/>
    </statechart>
   </class>
   <attribute name="AO_SeqCtrl" type="QMActive * const" visibility="0x00" properties="0x00"/>
   <attribute name="g_length" type="uint32_t" visibility="0x02" properties="0x00"/>
   <attribute name="g_cycles" type="uint32_t" visibility="0x02" properties="0x00"/>
+  <attribute name="g_sCfg" type="StartConfiguration" visibility="0x00" properties="0x00"/>
   <operation name="SeqCtrl_ctor" type="void" visibility="0x00" properties="0x00">
    <code>QActive_ctor(&amp;l_seqCtrl.super, Q_STATE_CAST(&amp;SeqCtrl_initial));
 
@@ -168,6 +191,21 @@ QACTIVE_START(&amp;l_seqCtrl.super,
   <operation name="GetLength" type="uint32_t" visibility="0x02" properties="0x00">
    <code>return g_length;</code>
   </operation>
+  <operation name="SetSCfgMode" type="void" visibility="0x00" properties="0x00">
+   <parameter name="mode" type="enum StartMode"/>
+   <code>g_sCfg.mode = mode;</code>
+  </operation>
+  <operation name="SetSCfgModuloDivisor" type="void" visibility="0x00" properties="0x00">
+   <parameter name="divisor" type="uint32_t"/>
+   <code>g_sCfg.moduloDivisor = divisor;</code>
+  </operation>
+  <operation name="SetSCfgModuloOffset" type="void" visibility="0x00" properties="0x00">
+   <parameter name="offset" type="uint32_t"/>
+   <code>g_sCfg.moduloOffset = offset;</code>
+  </operation>
+  <operation name="GetSCfg" type="StartConfiguration" visibility="0x02" properties="0x00">
+   <code>return g_sCfg;</code>
+  </operation>
  </package>
  <directory name=".">
   <file name="seqCtrl.c">
@@ -179,6 +217,13 @@ QACTIVE_START(&amp;l_seqCtrl.super,
 
 
 Q_DEFINE_THIS_FILE
+
+/* start configuration type ------------------------------------------------*/
+typedef struct {
+    enum StartMode mode;
+    uint32_t moduloDivisor;
+    uint32_t moduloOffset;
+} StartConfiguration;
 
 /* Active object class -----------------------------------------------------*/
 $declare(AOs::SeqCtrl)
@@ -201,6 +246,13 @@ $define(AOs::g_cycles)
 $define(AOs::SetCycles)
 $define(AOs::GetCycles)
 
+$define(AOs::g_sCfg)
+$define(AOs::SetSCfgMode)
+$define(AOs::SetSCfgModuloDivisor)
+$define(AOs::SetSCfgModuloOffset)
+$define(AOs::GetSCfg)
+
+
 /* Philo definition --------------------------------------------------------*/
 $define(AOs::SeqCtrl_ctor)
 $define(AOs::SeqCtrl)
@@ -211,6 +263,12 @@ $define(AOs::SeqCtrl)
 #define SEQ_QTRL_H
 
 #include &quot;qpc.h&quot;
+
+/* start configurations */
+enum StartMode {
+    START_IMMEDIATELY,
+    START_MODULO
+};
 
 /* events */
 enum SeqCtrl {
@@ -227,6 +285,9 @@ $declare(Events::PulseIdEvt)
 /* data */
 $declare(AOs::SetLength)
 $declare(AOs::SetCycles)
+$declare(AOs::SetSCfgMode)
+$declare(AOs::SetSCfgModuloDivisor)
+$declare(AOs::SetSCfgModuloOffset)
 
 
 /* output */
