@@ -6,6 +6,7 @@ import numpy
 import argparse
 from enum import Enum
 import logging
+import time
 
 class SequenceState(Enum):
     EQUAL = 1
@@ -437,14 +438,17 @@ class SequenceDialog(QWidget):
         self.pvSeq0Ser19 = PV(args.device + ':seq0Ser19-Data-I')
         self.pvStart = PV(args.device + ':seq0Ctrl-Start-I')
         self.pvStop = PV(args.device + ':seq0Ctrl-Stop-I')
-        self.pvStatus = PV(args.device + ':seq0Ctrl-IsRunning-O')
-        self.pvStartedAt = PV(args.device + ':seq0Ctrl-StartedAt-O')
+        self.pvStatus = PV(args.device + ':seq0Ctrl-IsRunning-O',
+                           callback=self.__on_pvs_run_status_change)
+        self.pvStartedAt = PV(args.device + ':seq0Ctrl-StartedAt-O',
+                              callback=self.__on_pvs_run_status_change)
         self.pvSCfgMode = PV(args.device + ':seq0Ctrl-SCfgMode-I',
                              callback=self.__on_pvs_start_config_change)
         self.pvSCfgModDivisor = PV(args.device + ':seq0Ctrl-SCfgModDivisor-I',
                                    callback=self.__on_pvs_start_config_change)
         self.pvSCfgModOffset = PV(args.device + ':seq0Ctrl-SCfgModOffset-I',
                                   callback=self.__on_pvs_start_config_change)
+        time.sleep(3)
 
         # connect slots
         self.__btnDown.clicked.connect(self.btnDownAction)
@@ -456,17 +460,9 @@ class SequenceDialog(QWidget):
         self.__rbtn_forever.toggled.connect(self.rep_config_changed)
         self.__btnInsertRow.clicked.connect(self.btnInsertRowAction)
         self.__btnRemoveRow.clicked.connect(self.btnRemoveRowAction)
-        self.connect(self, SIGNAL("seqCtrlStatusChange"), self.emitStatusChange)
-        self.connect(self, SIGNAL("seqCtrlStartedAtChange"), self.emitStartedAtChange)
         self.connect(self, SIGNAL("uploadSequence"), self.uploadSequence)
 
-        # add pv monitor callbacks
-        self.pvStatus.add_callback(self.__on_pv_status_changes)
-        self.pvStartedAt.add_callback(self.__on_pv_started_at_changes)
-
         # ensure status of gui is updated after start up
-        self.emit(SIGNAL("seqCtrlStatusChange"))
-        self.emit(SIGNAL("seqCtrlStartedAtChange"))
         self.emit(SIGNAL("uploadSequence"))
 
     def createWidgets(self):
@@ -649,36 +645,6 @@ class SequenceDialog(QWidget):
         logging.info('button "remove row" has been pressed')
         self.__model.removeRowsKeepStepOff(self.__model.rowCount(self) - 1, 1)
 
-    def emitStatusChange(self):
-
-        logging.info('SequenceDialog.emitStatusChange is running')
-
-        # get status and set/enable/disable related widgets
-        value = self.pvStatus.get()
-        if value == 0:
-            self.__leditStatus.setText('stopped')
-            self.__grpb_repetitions.setDisabled(False)
-            self.__grpb_start_config.setDisabled(False)
-            self.__btnStart.setDisabled(False)
-            self.__btnStop.setDisabled(True)
-        else:
-            self.__leditStatus.setText('running')
-            self.__grpb_repetitions.setDisabled(True)
-            self.__grpb_start_config.setDisabled(True)
-            self.__btnStart.setDisabled(True)
-            self.__btnStop.setDisabled(False)
-
-        logging.info('SequenceDialog.leaving emitStatusChange')
-
-    def emitStartedAtChange(self):
-
-        logging.info('SequenceDialog.emitStartedAtChange is running')
-
-        # get new startedAt value and set widget
-        self.__leditStartedAt.setText(str(int(self.pvStartedAt.get())))
-
-        logging.info('SequenceDialog.leaving emitStartedAtChange')
-
     def uploadSequence(self):
 
         logging.info('SequenceDialog.uploadSequence() is running')
@@ -758,15 +724,30 @@ class SequenceDialog(QWidget):
             self.__rbtn_forever.setChecked(False)
             self.__sb_repetitions.setValue(value)
 
-    def __on_pv_status_changes(self, pvname=None, value=None, char_value=None,
+    def __on_pvs_run_status_change(self, pvname=None, value=None, char_value=None,
         **kw):
-        logging.info('pv status has changed, value=' + str(value))
-        self.emit(SIGNAL("seqCtrlStatusChange"), value)
+        logging.info('pv status has changed, value=' + char_value)
 
-    def __on_pv_started_at_changes(self, pvname=None, value=None, char_value=None,
-        **kw):
-        logging.info('pv startedAt has changed, value=' + str(value))
-        self.emit(SIGNAL("seqCtrlStartedAtChange"), value)
+        if pvname == self.pvStatus.pvname:
+            # get status and set/enable/disable related widgets
+            value = self.pvStatus.get()
+            if value == 0:
+                self.__leditStatus.setText('stopped')
+                self.__grpb_repetitions.setDisabled(False)
+                self.__grpb_start_config.setDisabled(False)
+                self.__btnStart.setDisabled(False)
+                self.__btnStop.setDisabled(True)
+            else:
+                self.__leditStatus.setText('running')
+                self.__grpb_repetitions.setDisabled(True)
+                self.__grpb_start_config.setDisabled(True)
+                self.__btnStart.setDisabled(True)
+                self.__btnStop.setDisabled(False)
+        elif pvname == self.pvStartedAt.pvname:
+            # get new startedAt value and set widget
+            self.__leditStartedAt.setText(str(int(self.pvStartedAt.get())))
+        else:
+            raise RunTimeError('run status pvs callback called for unexpected pv')
 
     def __on_pvs_start_config_change(self, pvname=None, value=None, char_value=None,
         **kw):
