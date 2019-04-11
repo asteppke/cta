@@ -14,14 +14,14 @@ class SequenceState(Enum):
 
 class SequenceTableModel(QAbstractTableModel):
     
-    def __init__(self, parent, serMaxLen, sequence = [[]], headers = [], localEvents = []):
+    def __init__(self, parent, sequence = [[]], headers = [], localEvents = []):
         QAbstractTableModel.__init__(self, parent)
         self.__parent = parent
         self.__sequence = sequence
         self.__headers = headers
         self.__columnMap = {'stepOff': 0, 'startOff': 1, 'evtCode': 2}
         self.__localEvents = localEvents
-        self.__serMaxLen = serMaxLen
+        self.__serMaxLen = 0
 
     def rowCount(self, parent):
         return len(self.__sequence)
@@ -281,6 +281,12 @@ class SequenceTableModel(QAbstractTableModel):
             self.__sequence[i][self.__columnMap['stepOff']] = currOff - lastOff
             lastOff = currOff
 
+    def setMaxLength(self, maxLen):
+        self.serMaxLen = maxLen
+
+    def getMaxLength(self):
+        return self.serMaxLen
+
     def getSeries(self):
 
         logging.info('SequenceTableModel.getSeries() is running')
@@ -400,8 +406,12 @@ class SequenceDialog(QWidget):
 
         self.args = args 
 
+        # create widgets
+        self.createWidgets()
+
         # create pv objects
-        self.pvSerMaxLen = PV(args.device + ':SerMaxLen-O')
+        self.pvSerMaxLen = PV(args.device + ':SerMaxLen-O',
+                              callback=self.__on_pv_max_length_change)
         self.pvLength = PV(args.device + ':seq0Ctrl-Length-I')
         self.pvCycles = PV(args.device + ':seq0Ctrl-Cycles-I')
         self.pvSeq0Ser0 = PV(args.device + ':seq0Ser0-Data-I')
@@ -428,9 +438,6 @@ class SequenceDialog(QWidget):
         self.pvStop = PV(args.device + ':seq0Ctrl-Stop-I')
         self.pvStatus = PV(args.device + ':seq0Ctrl-IsRunning-O')
         self.pvStartedAt = PV(args.device + ':seq0Ctrl-StartedAt-O')
-
-        # create widgets
-        self.createWidgets()
 
         # connect slots
         self.__btnDown.clicked.connect(self.btnDownAction)
@@ -461,8 +468,7 @@ class SequenceDialog(QWidget):
         headers = ["Step Offset", "Start Offset", "Event Codes"]
         initialSequence = [[0, 0, 200]]
         self.__localEvents = range(200, 220)
-        self.__serMaxLen = self.pvSerMaxLen.get()
-        self.__model = SequenceTableModel(self, self.__serMaxLen,
+        self.__model = SequenceTableModel(self,
             initialSequence, headers, self.__localEvents)
 
         # create top layouts
@@ -718,6 +724,11 @@ class SequenceDialog(QWidget):
         self.setCompare(SequenceState.EQUAL)
 
         logging.info('SequenceDialog.uploadSequence() is done')
+
+    def __on_pv_max_length_change(self, pvname=None, value=None, char_value=None,
+        **kw):
+        logging.info('pv max length has changed, value=' + char_value)
+        self.__model.setMaxLength(value)
 
     def __on_pv_status_changes(self, pvname=None, value=None, char_value=None,
         **kw):
