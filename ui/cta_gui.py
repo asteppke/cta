@@ -438,6 +438,12 @@ class SequenceDialog(QWidget):
         self.pvStop = PV(args.device + ':seq0Ctrl-Stop-I')
         self.pvStatus = PV(args.device + ':seq0Ctrl-IsRunning-O')
         self.pvStartedAt = PV(args.device + ':seq0Ctrl-StartedAt-O')
+        self.pvSCfgMode = PV(args.device + ':seq0Ctrl-SCfgMode-I',
+                             callback=self.__on_pvs_start_config_change)
+        self.pvSCfgModDivisor = PV(args.device + ':seq0Ctrl-SCfgModDivisor-I',
+                                   callback=self.__on_pvs_start_config_change)
+        self.pvSCfgModOffset = PV(args.device + ':seq0Ctrl-SCfgModOffset-I',
+                                  callback=self.__on_pvs_start_config_change)
 
         # connect slots
         self.__btnDown.clicked.connect(self.btnDownAction)
@@ -555,10 +561,23 @@ class SequenceDialog(QWidget):
 
         # start configuration group
         self.__rbtn_immediatly = QRadioButton('start immediately')
-        self.__rbtn_immediatly.setChecked(True)
+        self.__rbtn_modulo = QRadioButton('start if ((pulseId % divisor) - offset == 0)')
+        self.__labelDivisor = QLabel('Divisor', self)
+        self.__leditDivisor = QLineEdit(self)
+        self.__labelOffset = QLabel('Offset', self)
+        self.__leditOffset = QLineEdit(self)
         self.__grpb_start_config = QGroupBox("start configuration", self)
         vbl = QVBoxLayout()
         vbl.addWidget(self.__rbtn_immediatly)
+        vbl.addWidget(self.__rbtn_modulo)
+        hbl = QHBoxLayout()
+        hbl.addWidget(self.__labelDivisor)
+        hbl.addWidget(self.__leditDivisor)
+        vbl.addLayout(hbl)
+        hbl = QHBoxLayout()
+        hbl.addWidget(self.__labelOffset)
+        hbl.addWidget(self.__leditOffset)
+        vbl.addLayout(hbl)
         self.__grpb_start_config.setLayout(vbl)
         vertical1_layout.addWidget(self.__grpb_start_config)
 
@@ -739,6 +758,28 @@ class SequenceDialog(QWidget):
         **kw):
         logging.info('pv startedAt has changed, value=' + str(value))
         self.emit(SIGNAL("seqCtrlStartedAtChange"), value)
+
+    def __on_pvs_start_config_change(self, pvname=None, value=None, char_value=None,
+        **kw):
+
+        if pvname == self.pvSCfgMode.pvname:
+            logging.info('pv SCfgMode has changed, value=' + char_value)
+            if value == 0:
+                self.__rbtn_immediatly.setChecked(True)
+                self.__rbtn_modulo.setChecked(False)
+            elif value == 1:
+                self.__rbtn_immediatly.setChecked(False)
+                self.__rbtn_modulo.setChecked(True)
+            else:
+                raise RunTimeError('Invalid mode for start configuration received')
+        elif pvname == self.pvSCfgModDivisor.pvname:
+            logging.info('pv SCfgModDivisor has changed, value=' + char_value)
+            self.__leditDivisor.setText(char_value)
+        elif pvname == self.pvSCfgModOffset.pvname:
+            logging.info('pv SCfgModOffset has changed, value=' + char_value)
+            self.__leditOffset.setText(char_value)
+        else:
+            raise RunTimeError('Unexpected call of pv callback function')
 
     def setCompare(self, state):
 
