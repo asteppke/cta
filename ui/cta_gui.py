@@ -413,7 +413,8 @@ class SequenceDialog(QWidget):
         self.pvSerMaxLen = PV(args.device + ':SerMaxLen-O',
                               callback=self.__on_pv_max_length_change)
         self.pvLength = PV(args.device + ':seq0Ctrl-Length-I')
-        self.pvCycles = PV(args.device + ':seq0Ctrl-Cycles-I')
+        self.pvCycles = PV(args.device + ':seq0Ctrl-Cycles-I',
+                           callback=self.__on_pvs_rep_conf_change)
         self.pvSeq0Ser0 = PV(args.device + ':seq0Ser0-Data-I')
         self.pvSeq0Ser1 = PV(args.device + ':seq0Ser1-Data-I')
         self.pvSeq0Ser2 = PV(args.device + ':seq0Ser2-Data-I')
@@ -450,6 +451,9 @@ class SequenceDialog(QWidget):
         self.__btnUp.clicked.connect(self.btnUpAction)
         self.__btnStart.clicked.connect(self.btnStartAction)
         self.__btnStop.clicked.connect(self.btnStopAction)
+        self.__sb_repetitions.valueChanged.connect(self.rep_config_changed)
+        self.__rbtn_repetitions.toggled.connect(self.rep_config_changed)
+        self.__rbtn_forever.toggled.connect(self.rep_config_changed)
         self.__btnInsertRow.clicked.connect(self.btnInsertRowAction)
         self.__btnRemoveRow.clicked.connect(self.btnRemoveRowAction)
         self.connect(self, SIGNAL("seqCtrlStatusChange"), self.emitStatusChange)
@@ -623,16 +627,19 @@ class SequenceDialog(QWidget):
 
     def btnStartAction(self):
         logging.info('button start has been pressed')
-        if self.__rbtn_forever.isChecked():
-            repetitions = 0
-        else:
-            repetitions = self.__sb_repetitions.value()
-        self.pvCycles.put(repetitions)
         self.pvStart.put(1)
 
     def btnStopAction(self):
         logging.info('button stop has been pressed')
         self.pvStop.put(1)
+
+    def rep_config_changed(self):
+        logging.info('repetition config has been changed')
+        if self.__rbtn_forever.isChecked():
+            repetitions = 0
+        else:
+            repetitions = self.__sb_repetitions.value()
+        self.pvCycles.put(repetitions)
 
     def btnInsertRowAction(self):
         logging.info('button "insert row" has been pressed')
@@ -660,16 +667,6 @@ class SequenceDialog(QWidget):
             self.__grpb_start_config.setDisabled(True)
             self.__btnStart.setDisabled(True)
             self.__btnStop.setDisabled(False)
-
-        # get repetitions and set related widgets
-        repetitions = self.pvCycles.get()
-        if repetitions == 0:
-            self.__rbtn_forever.setChecked(True)
-            self.__rbtn_repetitions.setChecked(False)
-        else:
-            self.__rbtn_forever.setChecked(False)
-            self.__rbtn_repetitions.setChecked(True)
-            self.__sb_repetitions.setValue(repetitions)
 
         logging.info('SequenceDialog.leaving emitStatusChange')
 
@@ -748,6 +745,18 @@ class SequenceDialog(QWidget):
         **kw):
         logging.info('pv max length has changed, value=' + char_value)
         self.__model.setMaxLength(value)
+
+    def __on_pvs_rep_conf_change(self, pvname=None, value=None, char_value=None,
+        **kw):
+        logging.info('pv Cycles has changed, value=' + char_value)
+
+        if value == 0:
+            self.__rbtn_repetitions.setChecked(False)
+            self.__rbtn_forever.setChecked(True)
+        else:
+            self.__rbtn_repetitions.setChecked(True)
+            self.__rbtn_forever.setChecked(False)
+            self.__sb_repetitions.setValue(value)
 
     def __on_pv_status_changes(self, pvname=None, value=None, char_value=None,
         **kw):
