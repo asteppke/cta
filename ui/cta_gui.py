@@ -7,11 +7,13 @@ import argparse
 from enum import Enum
 import logging
 import time
+import re
 
 class SequenceState(Enum):
     EQUAL = 1
     UNEQUAL = 2
     UNKNOWN = 3
+    CHECK = 4
 
 class SequenceTableModel(QAbstractTableModel):
     
@@ -72,7 +74,7 @@ class SequenceTableModel(QAbstractTableModel):
         # update view
         self.dataChanged.emit(uIndTopLeft, uIndBotRight)
 
-        self.__parent.setCompare(SequenceState.UNEQUAL)
+        self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
 
         return True
 
@@ -207,7 +209,7 @@ class SequenceTableModel(QAbstractTableModel):
         
         self.endInsertRows()
         
-        self.__parent.setCompare(SequenceState.UNEQUAL)
+        self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
 
         return True
 
@@ -234,7 +236,7 @@ class SequenceTableModel(QAbstractTableModel):
 
         self.endRemoveRows()
         
-        self.__parent.setCompare(SequenceState.UNEQUAL)
+        self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
 
         return True
 
@@ -261,7 +263,7 @@ class SequenceTableModel(QAbstractTableModel):
 
         self.endRemoveRows()
         
-        self.__parent.setCompare(SequenceState.UNEQUAL)
+        self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
 
         return True
 
@@ -283,7 +285,7 @@ class SequenceTableModel(QAbstractTableModel):
             lastOff = currOff
 
     def setMaxLength(self, maxLen):
-        self.serMaxLen = maxLen
+        self.__serMaxLen = maxLen
 
     def getMaxLength(self):
         return self.serMaxLen
@@ -403,12 +405,31 @@ class SequenceDialog(QWidget):
 
     def __init__(self, args):
 
+        # call base class constructor
         super(SequenceDialog, self).__init__()
 
+        # save args for later
         self.args = args 
 
         # create widgets
         self.createWidgets()
+
+        # connect signals to slots
+        self.__btnDown.clicked.connect(self.btnDownAction)
+        self.__btnUp.clicked.connect(self.btnUpAction)
+        self.__btnStart.clicked.connect(self.btnStartAction)
+        self.__btnStop.clicked.connect(self.btnStopAction)
+        self.__sb_repetitions.valueChanged.connect(self.rep_config_changed)
+        self.__rbtn_repetitions.toggled.connect(self.rep_config_changed)
+        self.__rbtn_forever.toggled.connect(self.rep_config_changed)
+        self.__btnInsertRow.clicked.connect(self.btnInsertRowAction)
+        self.__btnRemoveRow.clicked.connect(self.btnRemoveRowAction)
+        self.connect(self, SIGNAL("set_max_length"), self.__update_max_length)
+        self.connect(self, SIGNAL("update_rep_config"), self.__update_rep_config)
+        self.connect(self, SIGNAL("update_equal_not_equal"), self.__update_equal_not_equal)
+        self.connect(self, SIGNAL("update_run_status"), self.__update_run_status)
+        self.connect(self, SIGNAL("update_start_config"), self.__update_start_config)
+        self.connect(self, SIGNAL("upload_sequence"), self.__upload_sequence)
 
         # create pv objects
         self.pvSerMaxLen = PV(args.device + ':SerMaxLen-O',
@@ -416,26 +437,46 @@ class SequenceDialog(QWidget):
         self.pvLength = PV(args.device + ':seq0Ctrl-Length-I')
         self.pvCycles = PV(args.device + ':seq0Ctrl-Cycles-I',
                            callback=self.__on_pvs_rep_conf_change)
-        self.pvSeq0Ser0 = PV(args.device + ':seq0Ser0-Data-I')
-        self.pvSeq0Ser1 = PV(args.device + ':seq0Ser1-Data-I')
-        self.pvSeq0Ser2 = PV(args.device + ':seq0Ser2-Data-I')
-        self.pvSeq0Ser3 = PV(args.device + ':seq0Ser3-Data-I')
-        self.pvSeq0Ser4 = PV(args.device + ':seq0Ser4-Data-I')
-        self.pvSeq0Ser5 = PV(args.device + ':seq0Ser5-Data-I')
-        self.pvSeq0Ser6 = PV(args.device + ':seq0Ser6-Data-I')
-        self.pvSeq0Ser7 = PV(args.device + ':seq0Ser7-Data-I')
-        self.pvSeq0Ser8 = PV(args.device + ':seq0Ser8-Data-I')
-        self.pvSeq0Ser9 = PV(args.device + ':seq0Ser9-Data-I')
-        self.pvSeq0Ser10 = PV(args.device + ':seq0Ser10-Data-I')
-        self.pvSeq0Ser11 = PV(args.device + ':seq0Ser11-Data-I')
-        self.pvSeq0Ser12 = PV(args.device + ':seq0Ser12-Data-I')
-        self.pvSeq0Ser13 = PV(args.device + ':seq0Ser13-Data-I')
-        self.pvSeq0Ser14 = PV(args.device + ':seq0Ser14-Data-I')
-        self.pvSeq0Ser15 = PV(args.device + ':seq0Ser15-Data-I')
-        self.pvSeq0Ser16 = PV(args.device + ':seq0Ser16-Data-I')
-        self.pvSeq0Ser17 = PV(args.device + ':seq0Ser17-Data-I')
-        self.pvSeq0Ser18 = PV(args.device + ':seq0Ser18-Data-I')
-        self.pvSeq0Ser19 = PV(args.device + ':seq0Ser19-Data-I')
+        self.pvSeq0Ser0 = PV(args.device + ':seq0Ser0-Data-I',
+                             callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser1 = PV(args.device + ':seq0Ser1-Data-I',
+                             callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser2 = PV(args.device + ':seq0Ser2-Data-I',
+                             callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser3 = PV(args.device + ':seq0Ser3-Data-I',
+                             callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser4 = PV(args.device + ':seq0Ser4-Data-I',
+                             callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser5 = PV(args.device + ':seq0Ser5-Data-I',
+                             callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser6 = PV(args.device + ':seq0Ser6-Data-I',
+                             callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser7 = PV(args.device + ':seq0Ser7-Data-I',
+                             callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser8 = PV(args.device + ':seq0Ser8-Data-I',
+                             callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser9 = PV(args.device + ':seq0Ser9-Data-I',
+                             callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser10 = PV(args.device + ':seq0Ser10-Data-I',
+                              callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser11 = PV(args.device + ':seq0Ser11-Data-I',
+                              callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser12 = PV(args.device + ':seq0Ser12-Data-I',
+                              callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser13 = PV(args.device + ':seq0Ser13-Data-I',
+                              callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser14 = PV(args.device + ':seq0Ser14-Data-I',
+                              callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser15 = PV(args.device + ':seq0Ser15-Data-I',
+                              callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser16 = PV(args.device + ':seq0Ser16-Data-I',
+                              callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser17 = PV(args.device + ':seq0Ser17-Data-I',
+                              callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser18 = PV(args.device + ':seq0Ser18-Data-I',
+                              callback=self.__on_pvs_seq_change)
+        self.pvSeq0Ser19 = PV(args.device + ':seq0Ser19-Data-I',
+                              callback=self.__on_pvs_seq_change)
         self.pvStart = PV(args.device + ':seq0Ctrl-Start-I')
         self.pvStop = PV(args.device + ':seq0Ctrl-Stop-I')
         self.pvStatus = PV(args.device + ':seq0Ctrl-IsRunning-O',
@@ -448,22 +489,18 @@ class SequenceDialog(QWidget):
                                    callback=self.__on_pvs_start_config_change)
         self.pvSCfgModOffset = PV(args.device + ':seq0Ctrl-SCfgModOffset-I',
                                   callback=self.__on_pvs_start_config_change)
-        time.sleep(3)
 
-        # connect slots
-        self.__btnDown.clicked.connect(self.btnDownAction)
-        self.__btnUp.clicked.connect(self.btnUpAction)
-        self.__btnStart.clicked.connect(self.btnStartAction)
-        self.__btnStop.clicked.connect(self.btnStopAction)
-        self.__sb_repetitions.valueChanged.connect(self.rep_config_changed)
-        self.__rbtn_repetitions.toggled.connect(self.rep_config_changed)
-        self.__rbtn_forever.toggled.connect(self.rep_config_changed)
-        self.__btnInsertRow.clicked.connect(self.btnInsertRowAction)
-        self.__btnRemoveRow.clicked.connect(self.btnRemoveRowAction)
-        self.connect(self, SIGNAL("uploadSequence"), self.uploadSequence)
+        # wait until all pvs have an initial values
+        # (and signals to process these values have been send)
+        time.sleep(2)
 
-        # ensure status of gui is updated after start up
-        self.emit(SIGNAL("uploadSequence"))
+        # ensure sequence on ioc is uploaded on gui start up
+        # We do this with a timer to get the request to the gui
+        # event queue.
+        self.timer = QTimer(self)
+        self.timer.setSingleShot(True)
+        self.timer.timeout.connect(self.__upload_sequence)
+        self.timer.start(10)
 
     def createWidgets(self):
 
@@ -486,7 +523,6 @@ class SequenceDialog(QWidget):
         self.__labelTable = QLabel('sequence in table')
         self.__labelCompare = QLabel()
         self.__labelCompare.setAlignment(Qt.AlignCenter);
-        self.setCompare(SequenceState.UNKNOWN)
         self.__labelIoc = QLabel('sequence on IOC')
         self.__btnDown = QPushButton('-->', self)
         self.__btnUp = QPushButton('<--', self)
@@ -586,7 +622,66 @@ class SequenceDialog(QWidget):
 
         self.setLayout(horizontal_layout)
 
+    def __on_pv_max_length_change(self, pvname=None, value=None, char_value=None,
+        **kw):
+        """
+        Refer to NOTE01
+        """
+        logging.info('pv max length has changed, value=' + char_value)
+        self.emit(SIGNAL("set_max_length"), value)
+
+    def __on_pvs_rep_conf_change(self, pvname=None, value=None, char_value=None,
+        **kw):
+        """
+        Refer to NOTE01
+        """
+        logging.info('pv Cycles has changed, value=' + char_value)
+        self.emit(SIGNAL("update_rep_config"), value)
+
+    def __on_pvs_seq_change(self, pvname=None, value=None, char_value=None,
+        **kw):
+        """
+        Refer to NOTE01
+        """
+
+        # extract which series has changed
+        po = re.compile('.*seq[0-9]*Ser([0-9]*)-Data-I')
+        mo = po.search(pvname)
+        series_index = int(mo.group(1))
+        logging.info('pv series %s has changed, value=%s', str(series_index), str(value))
+
+        # transform value to list
+        if len(value) > 1:
+            series_ioc = value.tolist()
+        else:
+            series_ioc = [value]
+
+        self.emit(SIGNAL("update_equal_not_equal"), SequenceState.CHECK, series_index, series_ioc)
+
+    def __on_pvs_run_status_change(self, pvname=None, value=None, char_value=None,
+        **kw):
+        """
+        Refer to NOTE01
+        """
+
+        logging.info('pv status has changed, value=' + char_value)
+
+        self.emit(SIGNAL("update_run_status"), pvname, value)
+
+    def __on_pvs_start_config_change(self, pvname=None, value=None, char_value=None,
+        **kw):
+        """
+        Refer to NOTE01
+        """
+
+        logging.info('pvs start config have changed, value=' + char_value)
+
+        self.emit(SIGNAL("update_start_config"), pvname, value, char_value)
+
     def btnDownAction(self):
+        """
+        Refer to NOTE02
+        """
 
         logging.info('button down has been pressed')
 
@@ -615,21 +710,33 @@ class SequenceDialog(QWidget):
         self.pvSeq0Ser18.put(numpy.array(series[18]), wait=True)
         self.pvSeq0Ser19.put(numpy.array(series[19]), wait=True)
 
-        self.setCompare(SequenceState.EQUAL)
+        self.__update_equal_not_equal(SequenceState.EQUAL)
 
     def btnUpAction(self):
+        """
+        Refer to NOTE02
+        """
         logging.info('button up has been pressed')
-        self.uploadSequence()
+        self.__upload_sequence()
 
     def btnStartAction(self):
+        """
+        Refer to NOTE02
+        """
         logging.info('button start has been pressed')
         self.pvStart.put(1)
 
     def btnStopAction(self):
+        """
+        Refer to NOTE02
+        """
         logging.info('button stop has been pressed')
         self.pvStop.put(1)
 
     def rep_config_changed(self):
+        """
+        Refer to NOTE02
+        """
         logging.info('repetition config has been changed')
         if self.__rbtn_forever.isChecked():
             repetitions = 0
@@ -638,20 +745,55 @@ class SequenceDialog(QWidget):
         self.pvCycles.put(repetitions)
 
     def btnInsertRowAction(self):
+        """
+        Refer to NOTE02
+        """
         logging.info('button "insert row" has been pressed')
         self.__model.insertRows(self.__model.rowCount(self), 1)
 
     def btnRemoveRowAction(self):
+        """
+        Refer to NOTE02
+        """
         logging.info('button "remove row" has been pressed')
         self.__model.removeRowsKeepStepOff(self.__model.rowCount(self) - 1, 1)
 
-    def uploadSequence(self):
+    def __update_max_length(self, max_length):
+        """
+        Refer to NOTE02
+        """
 
-        logging.info('SequenceDialog.uploadSequence() is running')
+        logging.info('__update_max_length() is running')
+        self.__model.setMaxLength(max_length)
+        logging.info('__update_max_length() is done')
+
+    def __update_rep_config(self, value):
+        """
+        Refer to NOTE02
+        """
+
+        logging.info('__update_rep_config() is running')
+
+        if value == 0:
+            self.__rbtn_repetitions.setChecked(False)
+            self.__rbtn_forever.setChecked(True)
+        else:
+            self.__rbtn_repetitions.setChecked(True)
+            self.__rbtn_forever.setChecked(False)
+            self.__sb_repetitions.setValue(value)
+
+        logging.info('__update_rep_config() is done')
+
+    def __upload_sequence(self):
+        """
+        Refer to NOTE02
+        """
+
+        logging.info('__upload_sequence() is running')
 
         series = [None] * len(self.__localEvents)
 
-        length = self.pvSeq0Ser0.count
+        length = self.pvLength.get()
 
         if  length > 1:
             series[0] = self.pvSeq0Ser0.get().tolist()
@@ -703,34 +845,50 @@ class SequenceDialog(QWidget):
 
         self.__model.reset()
 
-        self.setCompare(SequenceState.EQUAL)
+        self.__update_equal_not_equal(SequenceState.EQUAL)
 
-        logging.info('SequenceDialog.uploadSequence() is done')
+        logging.info('__upload_sequence() is done')
 
-    def __on_pv_max_length_change(self, pvname=None, value=None, char_value=None,
-        **kw):
-        logging.info('pv max length has changed, value=' + char_value)
-        self.__model.setMaxLength(value)
 
-    def __on_pvs_rep_conf_change(self, pvname=None, value=None, char_value=None,
-        **kw):
-        logging.info('pv Cycles has changed, value=' + char_value)
+    def __update_equal_not_equal(self, state, series_index=None, series_ioc=None):
+        """
+        Refer to NOTE02
+        """
+        
+        logging.info('__update_equal_not_equal() is running')
 
-        if value == 0:
-            self.__rbtn_repetitions.setChecked(False)
-            self.__rbtn_forever.setChecked(True)
+        if state is SequenceState.CHECK:
+            logging.debug('__update_equal_not_equal() state=%s, series_index=%s, series_ioc=%s',
+                           state, series_index, series_ioc)
+            # get series currently in model
+            if self.__model.getSeries()[series_index] == series_ioc:
+                state = SequenceState.EQUAL
+            else:
+                state = SequenceState.UNEQUAL
+
+        if state is SequenceState.EQUAL:
+            logging.debug('__update_equal_not_equal() state=EQUAL')
+            self.__labelCompare.setText('  ==  ')
+            self.__labelCompare.setStyleSheet("QLabel { background-color : green; color : black; }");
+        elif state is SequenceState.UNEQUAL:
+            logging.debug('__update_equal_not_equal() state=UNEQUAL')
+            self.__labelCompare.setText('  !=  ')
+            self.__labelCompare.setStyleSheet("QLabel { background-color : red; color : black; }");
+        elif state is SequenceState.UNKNOWN:
+            logging.debug('__update_equal_not_equal() state=UNKNOWN')
+            self.__labelCompare.setText('  ??  ')
+            self.__labelCompare.setStyleSheet("QLabel { background-color : orange; color : black; }");
         else:
-            self.__rbtn_repetitions.setChecked(True)
-            self.__rbtn_forever.setChecked(False)
-            self.__sb_repetitions.setValue(value)
+            raise RunTimeError('unexpected state received')
 
-    def __on_pvs_run_status_change(self, pvname=None, value=None, char_value=None,
-        **kw):
-        logging.info('pv status has changed, value=' + char_value)
+    def __update_run_status(self, pvname, value):
+        """
+        Refer to NOTE02
+        """
+
+        logging.info('_update_run_status() is running')
 
         if pvname == self.pvStatus.pvname:
-            # get status and set/enable/disable related widgets
-            value = self.pvStatus.get()
             if value == 0:
                 self.__leditStatus.setText('stopped')
                 self.__grpb_repetitions.setDisabled(False)
@@ -744,14 +902,19 @@ class SequenceDialog(QWidget):
                 self.__btnStart.setDisabled(True)
                 self.__btnStop.setDisabled(False)
         elif pvname == self.pvStartedAt.pvname:
-            # get new startedAt value and set widget
-            self.__leditStartedAt.setText(str(int(self.pvStartedAt.get())))
+            self.__leditStartedAt.setText(str(int(value)))
         else:
             raise RunTimeError('run status pvs callback called for unexpected pv')
 
-    def __on_pvs_start_config_change(self, pvname=None, value=None, char_value=None,
-        **kw):
+        logging.info('_update_run_status() is done')
 
+    def __update_start_config(self, pvname, value, char_value):
+        """
+        Refer to NOTE02
+        """
+
+        logging.info('_update_start_config() is running')
+    
         if pvname == self.pvSCfgMode.pvname:
             logging.info('pv SCfgMode has changed, value=' + char_value)
             if value == 0:
@@ -771,17 +934,16 @@ class SequenceDialog(QWidget):
         else:
             raise RunTimeError('Unexpected call of pv callback function')
 
-    def setCompare(self, state):
+        logging.info('_update_start_config() is done')
 
-        if state is SequenceState.EQUAL:
-            self.__labelCompare.setText('  ==  ')
-            self.__labelCompare.setStyleSheet("QLabel { background-color : green; color : black; }");
-        elif state is SequenceState.UNEQUAL:
-            self.__labelCompare.setText('  !=  ')
-            self.__labelCompare.setStyleSheet("QLabel { background-color : red; color : black; }");
-        elif state is SequenceState.UNKNOWN:
-            self.__labelCompare.setText('  ??  ')
-            self.__labelCompare.setStyleSheet("QLabel { background-color : orange; color : black; }");
+    # NOTE01
+    # This function is a callback that is called from pyepics, if the
+    # value of a PV changed. It runs in the pyepics thread and emits a
+    # signal for the gui event queue thread to handle it.
+    #
+    # NOTE02
+    # This function is a slot. It is called from the gui event queue
+    # thread to handle the connected signal.
 
 if __name__ == '__main__':
     
