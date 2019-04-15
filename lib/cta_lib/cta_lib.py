@@ -175,19 +175,19 @@ class CtaLib:
         Upload a sequence to the IOC
 
         Arguments
-        seq: The sequence to be upload to the IOC.
+        seq: The sequence to be uploaded to the IOC.
              A sequence is a dictionary where each key value pair represents a series.
              A series is a list of 0's and 1's which defines, if the corresponding event code
-             is send in the corresponding machine pulse.
+             is sent in the corresponding machine pulse.
              The key is an integer and represents the event code.
              The value is the series.
-             If a certain event code is not send in the sequence, it may or may not
+             If a certain event code is not sent in the sequence, it may or may not
              not be present in the dictionary.
              Example:
                  seq = {200: [1, 0], 201: [1, 1]}
                  =>
-                 machine pulse     x: event code 200 is send
-                 machine pulse x + 1: event code 200 and 201 are send
+                 machine pulse     x: event code 200 is sent
+                 machine pulse x + 1: event code 200 and 201 are sent
         """
 
         logging.info('upload() is running')
