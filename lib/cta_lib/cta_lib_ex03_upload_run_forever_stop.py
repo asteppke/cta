@@ -4,7 +4,7 @@ python module.
 """
 import time
 import argparse
-import cta_lib
+from cta_lib import CtaLib
 
 def main():
     """
@@ -22,7 +22,7 @@ def main():
     args = parser.parse_args()
 
     # create cta lib object
-    lib = cta_lib.CtaLib(args.device, log_level=args.loglevel)
+    lib = CtaLib(args.device, log_level=args.loglevel)
 
     # exit if the cta is already running
     if lib.is_running():
@@ -45,9 +45,13 @@ def main():
     print(">> uploading")
     lib.upload(sequence)
 
+    # set repetition configuration
+    print(">> setting repetition configuration (forever)")
+    lib.set_repetition_config(config={'mode': CtaLib.RepetitionMode.FOREVER})
+
     # start
-    print(">> starting forever")
-    lib.start(0)
+    print(">> starting")
+    lib.start()
 
     # wait some time
     print(">> waiting some time before stopping")

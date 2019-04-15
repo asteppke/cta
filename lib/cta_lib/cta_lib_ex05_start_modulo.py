@@ -74,13 +74,18 @@ def main(): # pylint: disable=R0915
     print(">> uploading")
     lib.upload(sequence)
 
+    # set repetition config
+    repetition_config = {'mode': CtaLib.RepetitionMode.NTIMES, 'n': 1}
+    print('>> setting repetition configuration (' + str(repetition_config) + ')')
+    lib.set_repetition_config(config=repetition_config)
+
     # set start config, start and wait
     start_config = {'mode': CtaLib.StartMode.IMMEDIATE}
     print('!! setting start configuration (' + str(start_config) + ')')
     lib.set_start_config(config=start_config)
     print(">> starting once")
     event.clear()
-    lib.start(1)
+    lib.start()
     print('>> waiting until sequence is played out')
     if not event.wait(timeout=5.0):
         raise RuntimeError('Sequence did not complete in time')
@@ -93,7 +98,7 @@ def main(): # pylint: disable=R0915
     lib.set_start_config(config=start_config)
     print(">> starting once")
     event.clear()
-    lib.start(1)
+    lib.start()
     print('>> waiting until sequence is played out')
     if not event.wait(timeout=5.0):
         raise RuntimeError('Sequence did not complete in time')
@@ -106,7 +111,7 @@ def main(): # pylint: disable=R0915
     lib.set_start_config(config=start_config)
     print(">> starting once")
     event.clear()
-    lib.start(1)
+    lib.start()
     print('>> waiting until sequence is played out')
     if not event.wait(timeout=5.0):
         raise RuntimeError('Sequence did not complete in time')
@@ -119,7 +124,7 @@ def main(): # pylint: disable=R0915
     lib.set_start_config(config=start_config)
     print(">> starting once")
     event.clear()
-    lib.start(1)
+    lib.start()
     print('>> waiting until sequence is played out')
     if not event.wait(timeout=5.0):
         raise RuntimeError('Sequence did not complete in time')
@@ -132,7 +137,7 @@ def main(): # pylint: disable=R0915
     lib.set_start_config(config=start_config)
     print(">> starting once")
     event.clear()
-    lib.start(1)
+    lib.start()
     print('>> waiting until sequence is played out')
     if not event.wait(timeout=5.0):
         raise RuntimeError('Sequence did not complete in time')

@@ -276,30 +276,50 @@ class CtaLib:
         FOREVER = 0
         NTIMES = 1
 
-    def set_num_of_repetitions(self, repetitions):
+    def set_repetition_config(self, *, config):
         """
-        Set the number of repetitions to the CTA.
-        This is the number of times the sequence will be repeated when started.
+        Set the repetition configuration.
+
+        The repetition configuration defines how many times the sequence is
+        repeated by the CTA.
+        The repetition configuration is defined with a dictionary.
+        The key 'mode' is mandatory and can have the following values:
+        * CtaLib.RepetitionMode.FOREVER
+          The sequence is repeated forever. It must be stopped by calling
+          CtaLib.stop()
+        * CtaLib.RepetitionMode.NTIMES
+          The sequence is repeated n times, where n must be provided as value of
+          the key 'n'.
 
         Arguments:
-        repetitions: 0 = forever, x = x repetitions
+        config: dictionary describing the repetition configuration
         """
+
         # check connections
         is_all_connected = self._event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
         # set number of repetitions
-        self._pvs['Ctrl-Cycles-I'].put(repetitions, wait=True)
+        if config['mode'] == CtaLib.RepetitionMode.FOREVER:
+            self._pvs['Ctrl-Cycles-I'].put(0, wait=True)
+        elif config['mode'] == CtaLib.RepetitionMode.NTIMES:
+            self._pvs['Ctrl-Cycles-I'].put(config['n'], wait=True)
+        else:
+            RuntimeError('Invalid mode in repetition config received')
 
-    def get_num_of_repetitions(self):
+    def get_repetition_config(self):
         """
-        Get the number of repetitions from the CTA.
-        This is the number of times the sequence will be repeated when started.
+        Get the repetition configuration.
+
+        This functions gets the current repetition configuration from the CTA
+        and returns it as a dictionary. The format of the dictionary is the same
+        as described for the function set_repetition_confg()
 
         Return
-        repetitions: 0 = forever, x = x repetitions
+        config: dictionary describing the repetition configuration
         """
+
         # check connections
         is_all_connected = self._event.wait(timeout=5.0)
         if not is_all_connected:
@@ -308,7 +328,15 @@ class CtaLib:
         # get number of repetitions
         repetitions = self._pvs['Ctrl-Cycles-I'].get()
 
-        return repetitions
+        # prepare dictionary
+        config = {}
+        if repetitions == 0:
+            config['mode'] = CtaLib.RepetitionMode.FOREVER
+        else:
+            config['mode'] = CtaLib.RepetitionMode.NTIMES
+            config['n'] = repetitions
+
+        return config
 
     class StartMode(IntEnum):
         """
@@ -393,25 +421,17 @@ class CtaLib:
 
         return config
 
-    def start(self, repetitions=None):
+    def start(self):
         """
         Start CTA
-
-        Arguments
-        repetitions: 0 = forever, x = x repetitions
-                     defaut: do not set number of repetitions, last value on IOC will be used
         """
 
-        logging.info('start() is running (repetitions=%d)', repetitions)
+        logging.info('start() is running')
 
         # check connections
         is_all_connected = self._event.wait(timeout=5.0)
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
-
-        # set number of repetitions
-        if repetitions is not None:
-            self._pvs['Ctrl-Cycles-I'].put(repetitions, wait=True)
 
         # start
         self._pvs['Ctrl-Start-I'].put(1, wait=True)

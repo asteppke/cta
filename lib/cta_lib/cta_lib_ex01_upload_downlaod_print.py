@@ -3,7 +3,7 @@ This is an example sript which demonstrates the usage of the cta_lib
 python module.
 """
 import argparse
-import cta_lib
+from cta_lib import CtaLib
 
 def main():
     """
@@ -21,7 +21,7 @@ def main():
     args = parser.parse_args()
 
     # create cta lib object
-    lib = cta_lib.CtaLib(args.device, log_level=args.loglevel)
+    lib = CtaLib(args.device, log_level=args.loglevel)
 
     # exit if the cta is already running
     if lib.is_running():
@@ -55,9 +55,13 @@ def main():
     print('>> uploading')
     lib.upload(sequence)
 
+    # set repetition configuration
+    print(">> setting repetition configuration (one repetition)")
+    lib.set_repetition_config(config={'mode': CtaLib.RepetitionMode.NTIMES, 'n': 1})
+
     # start
-    print(">> starting (1 repetition)")
-    lib.start(1)
+    print(">> starting")
+    lib.start()
 
     # download
     print('>> downloading')

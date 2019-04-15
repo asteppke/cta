@@ -4,7 +4,7 @@ python module.
 """
 import argparse
 import time
-import cta_lib
+from cta_lib import CtaLib
 
 def run_status_callback_1(data, lib):
     """
@@ -62,7 +62,7 @@ def main():
     args = parser.parse_args()
 
     # create cta lib object
-    lib = cta_lib.CtaLib(args.device, log_level=args.loglevel)
+    lib = CtaLib(args.device, log_level=args.loglevel)
 
     # exit if the cta is already running
     if lib.is_running():
@@ -101,9 +101,13 @@ def main():
     print('>> uploading')
     lib.upload(sequence)
 
+    # set repetition configuration
+    print(">> setting repetition configuration (10 times)")
+    lib.set_repetition_config(config={'mode': CtaLib.RepetitionMode.NTIMES, 'n': 10})
+
     # start
-    print(">> starting (10 repetition)")
-    lib.start(10)
+    print(">> starting")
+    lib.start()
     time.sleep(0.2) # wait for the cta to process the start command
 
     # poll for completion
