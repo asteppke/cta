@@ -8,6 +8,7 @@ The first is via the GUI and the second is this python library.
 import logging
 import time
 import threading
+from enum import IntEnum
 import numpy
 from epics import PV
 
@@ -28,7 +29,7 @@ class CtaLib:
         self._constants = dict()
         self._constants['event_code_range_base'] = 200
         self._constants['num_of_event_codes'] = 20
-        self._constants['num_of_pvs'] = 27
+        self._constants['num_of_pvs'] = 30
 
         # setup logging
         numeric_level = getattr(logging, log_level.upper(), None)
@@ -62,6 +63,18 @@ class CtaLib:
             connection_callback=self._connection_callback)
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-Cycles-I'
         self._pvs['Ctrl-Cycles-I'] = PV(
+            pv_name,
+            connection_callback=self._connection_callback)
+        pv_name = device + ':seq' + str(sequence) + 'Ctrl-SCfgMode-I'
+        self._pvs['Ctrl-SCfgMode-I'] = PV(
+            pv_name,
+            connection_callback=self._connection_callback)
+        pv_name = device + ':seq' + str(sequence) + 'Ctrl-SCfgModDivisor-I'
+        self._pvs['Ctrl-SCfgModDivisor-I'] = PV(
+            pv_name,
+            connection_callback=self._connection_callback)
+        pv_name = device + ':seq' + str(sequence) + 'Ctrl-SCfgModOffset-I'
+        self._pvs['Ctrl-SCfgModOffset-I'] = PV(
             pv_name,
             connection_callback=self._connection_callback)
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-Start-I'
@@ -256,6 +269,13 @@ class CtaLib:
 
         return seq
 
+    class RepetitionMode(IntEnum):
+        """
+        Enumeration of repetition modes
+        """
+        FOREVER = 0
+        NTIMES = 1
+
     def set_num_of_repetitions(self, repetitions):
         """
         Set the number of repetitions to the CTA.
@@ -289,6 +309,89 @@ class CtaLib:
         repetitions = self._pvs['Ctrl-Cycles-I'].get()
 
         return repetitions
+
+    class StartMode(IntEnum):
+        """
+        Enumeration of start modes
+        """
+        IMMEDIATE = 0
+        MODULO = 1
+
+    def set_start_config(self, *, config):
+        """
+        Set the start configuration.
+
+        This function uploads the start configuration to the IOC.
+        The start configuration defines when the sequence is started on the IOC.
+        The start configuration is defined with a dictionary.
+        The key 'mode' is mandatory and can have the following values:
+          * CtaLib.StartMode.IMMEDIATE
+            The sequence is started a short, but undefined moment after
+            CtaLib.start() has been called.
+          * CtaLib.StartMode.MODULO
+            After CtaLib.start() had been called, the sequence is started in the first
+            machine pulse, where the expression
+            (pulseId % divisor) - offset == 0 is true.
+            In this mode the keys 'divisor' and 'offset' may be used to specify the
+            corresponding values.
+
+        Arguments
+        config: dictionary describing the start configuration
+        """
+
+        logging.info('set_start_config() is running (config=%s)', config)
+
+        # check connections
+        is_all_connected = self._event.wait(timeout=5.0)
+        if not is_all_connected:
+            raise RuntimeError('Some PV(s) is/are not connected')
+
+        self._pvs['Ctrl-SCfgMode-I'].put(config['mode'].value)
+
+        if config['mode'] == CtaLib.StartMode.IMMEDIATE:
+            pass
+        elif config['mode'] == CtaLib.StartMode.MODULO:
+            if 'divisor' in config:
+                self._pvs['Ctrl-SCfgModDivisor-I'].put(config['divisor'])
+            if 'offset' in config:
+                self._pvs['Ctrl-SCfgModOffset-I'].put(config['offset'])
+        else:
+            raise RuntimeError('Invalid start configuration received')
+
+    def get_start_config(self):
+        """
+        Get the start configuration.
+
+        This function downloads the current start configuration from the IOC
+        and returns it as a dictionary. The format of the dictionary
+        is the same as described for the function set_start_config().
+
+        Return
+        config: dictionary describing the start configuration
+        """
+
+        logging.info('get_start_config() is running')
+
+        # check connections
+        is_all_connected = self._event.wait(timeout=5.0)
+        if not is_all_connected:
+            raise RuntimeError('Some PV(s) is/are not connected')
+
+        config = {}
+
+        mode = self._pvs['Ctrl-SCfgMode-I'].get()
+        if mode == CtaLib.StartMode.IMMEDIATE:
+            config['mode'] = CtaLib.StartMode.IMMEDIATE
+        elif mode == CtaLib.StartMode.MODULO:
+            config['mode'] = CtaLib.StartMode.MODULO
+            config['divisor'] = self._pvs['Ctrl-SCfgModDivisor-I'].get()
+            config['offset'] = self._pvs['Ctrl-SCfgModOffset-I'].get()
+        else:
+            raise RuntimeError('Unexpected mode received')
+
+        logging.info('get_start_config() is done (config=%s)', config)
+
+        return config
 
     def start(self, repetitions=None):
         """
@@ -430,7 +533,7 @@ class CtaLib:
 
         Arguments
         seq: The sequence to be checked.
-                  A RunTimeError exception is thrown if the sequence is not valid.
+                  A RuntimeError exception is thrown if the sequence is not valid.
                   Refer to the upload method for a definition of seq.
         """
 
