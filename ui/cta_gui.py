@@ -422,6 +422,10 @@ class SequenceDialog(QWidget):
         self.__sb_repetitions.valueChanged.connect(self.rep_config_changed)
         self.__rbtn_repetitions.toggled.connect(self.rep_config_changed)
         self.__rbtn_forever.toggled.connect(self.rep_config_changed)
+        self.__rbtn_immediatly.clicked.connect(self.start_config_changed)
+        self.__rbtn_modulo.clicked.connect(self.start_config_changed)
+        self.__leditDivisor.editingFinished.connect(self.start_config_changed)
+        self.__leditOffset.editingFinished.connect(self.start_config_changed)
         self.__btnInsertRow.clicked.connect(self.btnInsertRowAction)
         self.__btnRemoveRow.clicked.connect(self.btnRemoveRowAction)
         self.connect(self, SIGNAL("set_max_length"), self.__update_max_length)
@@ -673,10 +677,12 @@ class SequenceDialog(QWidget):
         """
         Refer to NOTE01
         """
+        logging.info('SequenceDialog.__on_pvs_start_config_change() is running')
 
-        logging.info('pvs start config have changed, value=' + char_value)
-
+        logging.debug('pv %s has changed, new value=%s', pvname, char_value)
         self.emit(SIGNAL("update_start_config"), pvname, value, char_value)
+
+        logging.info('SequenceDialog.__on_pvs_start_config_change() is done')
 
     def btnDownAction(self):
         """
@@ -743,6 +749,36 @@ class SequenceDialog(QWidget):
         else:
             repetitions = self.__sb_repetitions.value()
         self.pvCycles.put(repetitions)
+    def start_config_changed(self):
+        """
+        Refer to NOTE02
+        """
+
+        logging.info('SequenceDialog.start_config_changed() is running')
+
+        if self.__rbtn_immediatly.isChecked():
+            if self.pvSCfgMode.get() != 0:
+                logging.debug('put start config mode=0 to pv')
+                self.pvSCfgMode.put(0)
+
+        if self.__rbtn_modulo.isChecked():
+            if self.pvSCfgMode.get() != 1:
+                logging.debug('put start config mode=1 to pv')
+                self.pvSCfgMode.put(1)
+
+        if self.__leditDivisor.text() != '':
+            divisor = int(self.__leditDivisor.text())
+            if divisor != self.pvSCfgModDivisor.get():
+                logging.debug('put start config divisor=%s to pv', divisor)
+                self.pvSCfgModDivisor.put(divisor)
+
+        if self.__leditOffset.text() != '':
+            offset = int(self.__leditOffset.text())
+            if offset != self.pvSCfgModOffset.get():
+                logging.debug('put start config offset=%s to pv', offset)
+                self.pvSCfgModOffset.put(offset)
+
+        logging.info('SequenceDialog.start_config_changed() is done')
 
     def btnInsertRowAction(self):
         """
@@ -911,10 +947,10 @@ class SequenceDialog(QWidget):
         Refer to NOTE02
         """
 
-        logging.info('_update_start_config() is running')
+        logging.info('SequenceDialog.__update_start_config() is running')
     
         if pvname == self.pvSCfgMode.pvname:
-            logging.info('pv SCfgMode has changed, value=' + char_value)
+            logging.debug('updating radio buttons, value=' + char_value)
             if value == 0:
                 self.__rbtn_immediatly.setChecked(True)
             elif value == 1:
@@ -922,15 +958,15 @@ class SequenceDialog(QWidget):
             else:
                 raise RunTimeError('Invalid mode for start configuration received')
         elif pvname == self.pvSCfgModDivisor.pvname:
-            logging.info('pv SCfgModDivisor has changed, value=' + char_value)
+            logging.debug('updating ledit divisor, value=' + char_value)
             self.__leditDivisor.setText(char_value)
         elif pvname == self.pvSCfgModOffset.pvname:
-            logging.info('pv SCfgModOffset has changed, value=' + char_value)
+            logging.debug('updating ledit offset, value=' + char_value)
             self.__leditOffset.setText(char_value)
         else:
             raise RunTimeError('Unexpected call of pv callback function')
 
-        logging.info('_update_start_config() is done')
+        logging.info('SequenceDialog.__update_start_config() is done')
 
     # NOTE01
     # This function is a callback that is called from pyepics, if the
