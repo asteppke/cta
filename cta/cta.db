@@ -76,7 +76,7 @@ record(dfanout, "$(P)DrvSeq0") {
 
   field(OMSL, "closed_loop")
 
-  field(DOL, "$(P)seq0Ctrl-IsRunning-O PP")
+  field(DOL, "$(P)seq0Ctrl-IsEnabled-O PP")
 
   field(OUTA, "$(P)seq0Ser0-Enable-I PP")
 

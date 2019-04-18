@@ -191,7 +191,7 @@ typedef struct {
 } LonginPriv;
 
 /* local objects */
-static LonginGlue s_longin_glue[4];
+static LonginGlue s_longin_glue[5];
 
 /* global functions */
 void SeqCtrl_SetIndex(uint32_t index) {
@@ -212,6 +212,11 @@ void SeqCtrl_SetSop(long dummy) {
 void SeqCtrl_SetIsRunning(long is_running) {
   s_longin_glue[3].value = is_running;
   scanIoRequest(s_longin_glue[3].sio);
+}
+
+void SeqCtrl_SetIsEnabled(long is_enabled) {
+  s_longin_glue[4].value = is_enabled;
+  scanIoRequest(s_longin_glue[4].sio);
 }
 
 /* dset */
@@ -249,6 +254,7 @@ long devSeqCtrlInitLongin(longinRecord *record) {
     case 1:
     case 2:
     case 3:
+    case 4:
       break;
     default:
       errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
@@ -281,6 +287,9 @@ long devSeqCtrlInitLongin(longinRecord *record) {
       break;
     case 3:
       priv->glue = &s_longin_glue[3];
+      break;
+    case 4:
+      priv->glue = &s_longin_glue[4];
       break;
     default:
       errlogSevPrintf(errlogFatal, "%s #%s#: invalid signal "
@@ -570,6 +579,10 @@ static void DevSeqCtrlInitHook(initHookState state) {
       /* 3 IsRunning */
       scanIoInit(&s_longin_glue[3].sio);
       s_longin_glue[3].value = 0;     
+
+      /* 4 IsEnabled */
+      scanIoInit(&s_longin_glue[4].sio);
+      s_longin_glue[4].value = 0;     
 
       /* ai 0 StartAt */
       scanIoInit(&s_ai_glue[0].sio);
