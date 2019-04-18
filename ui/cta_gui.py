@@ -775,11 +775,9 @@ class SequenceDialog(QWidget):
         logging.info('__update_rep_config() is running')
 
         if value == 0:
-            self.__rbtn_repetitions.setChecked(False)
             self.__rbtn_forever.setChecked(True)
         else:
             self.__rbtn_repetitions.setChecked(True)
-            self.__rbtn_forever.setChecked(False)
             self.__sb_repetitions.setValue(value)
 
         logging.info('__update_rep_config() is done')
@@ -919,9 +917,7 @@ class SequenceDialog(QWidget):
             logging.info('pv SCfgMode has changed, value=' + char_value)
             if value == 0:
                 self.__rbtn_immediatly.setChecked(True)
-                self.__rbtn_modulo.setChecked(False)
             elif value == 1:
-                self.__rbtn_immediatly.setChecked(False)
                 self.__rbtn_modulo.setChecked(True)
             else:
                 raise RunTimeError('Invalid mode for start configuration received')
