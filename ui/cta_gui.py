@@ -97,14 +97,13 @@ class SequenceTableModel(QAbstractTableModel):
 
     def setDataStepOff(self, index, value, role):
         
-        logging.info('setDataStepOff() is running')
-        
+        logging.info('SequenceTableModel.setDataStepOff() is running')
         
         if role == Qt.EditRole:
 
             row = index.row()
             column = index.column()
-            logging.info('row=' + str(row) + ' column=' + str(column))
+            logging.debug('row=' + str(row) + ' column=' + str(column))
 
             # verify value
 
@@ -119,7 +118,7 @@ class SequenceTableModel(QAbstractTableModel):
                 if i != row:
                     sumOff += self.__sequence[i][column]
             if sumOff + value >= self.__serMaxLen:
-                logging.info(sumOff+value)
+                logging.debug(sumOff+value)
                 return False, 0, 0
             
             # set value
@@ -128,17 +127,21 @@ class SequenceTableModel(QAbstractTableModel):
             # update dependent data
             self.startOffFromStepOff();
 
+            logging.info('SequenceTableModel.setDataStepOff() is done')
+
             return True, index, index
+
+        logging.info('SequenceTableModel.setDataStepOff() is done')
             
     def setDataStartOff(self, index, value, role):
         
-        logging.info('setDataStartOff() is running')
+        logging.info('SequenceTableModel.setDataStartOff() is running')
         
         if role == Qt.EditRole:
 
             row = index.row()
             column = index.column()
-            logging.info('row=' + str(row) + ' column=' + str(column))
+            logging.debug('row=' + str(row) + ' column=' + str(column))
 
             # verify value
 
@@ -168,8 +171,12 @@ class SequenceTableModel(QAbstractTableModel):
             # update dependent data
             self.stepOffFromStartOff();
 
+            logging.info('SequenceTableModel.setDataStartOff() is done')
+
             return True, index, index
             
+        logging.info('SequenceTableModel.setDataStartOff() is done')
+
     def headerData(self, section, orientation, role):
         
         if role == Qt.DisplayRole:
@@ -188,15 +195,17 @@ class SequenceTableModel(QAbstractTableModel):
     #      row = rowCount() => append
     # count: number of rows to be inserted
     def insertRows(self, row, count, parent = QModelIndex()):
-        logging.info('insertRows has been called')
-        logging.info('row=' + str(row) + ' count=' + str(count))
+
+        logging.info('SequenceTableModel.insertRows() is running')
+
+        logging.debug('row=' + str(row) + ' count=' + str(count))
 
         self.beginInsertRows(parent, row, row + count - 1)
         
         # insert data
         for i in range(count):
             seq_idx_before = row + i
-            logging.info('seq_idx_before=' + str(seq_idx_before))
+            logging.debug('seq_idx_before=' + str(seq_idx_before))
             if seq_idx_before == 0: # empty or prepend
                 self.__sequence.insert(seq_idx_before,
                   [0, 0, self.__localEvents[0]])
@@ -211,13 +220,17 @@ class SequenceTableModel(QAbstractTableModel):
         
         self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
 
+        logging.info('SequenceTableModel.insertRows() is done')
+
         return True
 
     # row: index of first row to be removed
     # count: number of rows to be removed
     def removeRowsKeepStepOff(self, row, count, parent = QModelIndex()):
-        logging.info('removeRowsKeepStepOff has been called')
-        logging.info('row=' + str(row) + ' count=' + str(count))
+
+        logging.info('SequenceTableModel.removeRowsKeepStepOff is running')
+
+        logging.debug('row=' + str(row) + ' count=' + str(count))
         
         first = row
         last = first + count - 1
@@ -238,13 +251,17 @@ class SequenceTableModel(QAbstractTableModel):
         
         self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
 
+        logging.info('SequenceTableModel.removeRowsKeepStepOff is done')
+
         return True
 
     # row: index of first row to be removed
     # count: number of rows to be removed
     def removeRowsKeepStartOff(self, row, count, parent = QModelIndex()):
-        logging.info('removeRowsKeepStartOff has been called')
-        logging.info('row=' + str(row) + ' count=' + str(count))
+
+        logging.info('SequenceTableModel.removeRowsKeepStartOff is running')
+
+        logging.debug('row=' + str(row) + ' count=' + str(count))
         
         first = row
         last = first + count - 1
@@ -264,6 +281,8 @@ class SequenceTableModel(QAbstractTableModel):
         self.endRemoveRows()
         
         self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
+
+        logging.info('SequenceTableModel.removeRowsKeepStartOff is done')
 
         return True
 
@@ -293,6 +312,7 @@ class SequenceTableModel(QAbstractTableModel):
     def getSeries(self):
 
         logging.info('SequenceTableModel.getSeries() is running')
+
         logging.debug(self.__sequence)
 
         # find the length of the series
@@ -313,6 +333,7 @@ class SequenceTableModel(QAbstractTableModel):
             series[self.__localEvents.index(event_code)][step_offset] = 1
 
         logging.debug(series)
+
         logging.info('SequenceTableModel.getSeries() is done')
 
         return series
@@ -320,6 +341,7 @@ class SequenceTableModel(QAbstractTableModel):
     def setSeries(self, series):
 
         logging.info('SequenceTableModel.setSeries() is running')
+
         logging.debug(series)
 
         # init sequence
@@ -346,8 +368,10 @@ class SequenceTableModel(QAbstractTableModel):
                     self.__sequence[row][self.__columnMap['startOff']] = i
                     self.__sequence[row][self.__columnMap['evtCode']] = self.__localEvents[k]
                     row += 1
+
         logging.debug(self.__sequence)
 
+        logging.info('SequenceTableModel.setSeries() is done')
 
 class SequenceTableView(QTableView):
     
@@ -364,7 +388,8 @@ class SequenceTableView(QTableView):
           vertical.length() *10 + horizontal.height() + frame)
 
     def contextMenuEvent(self, event):
-      logging.info("SequenceTableView::contextMenuEvent() is running")
+
+      logging.info("SequenceTableView.contextMenuEvent() is running")
       
       position = event.pos()
       column = self.columnAt(position.x())
@@ -386,20 +411,34 @@ class SequenceTableView(QTableView):
 
       self.menu.popup(QCursor.pos())
 
+      logging.info("SequenceTableView.contextMenuEvent() is done")
+
     def insertRow(self, row):
-      logging.info("SequenceTableView::insertRow() is running")
+
+      logging.info("SequenceTableView.insertRow() is running")
+
       self.model.insertRows(row + 1, 1)
       #self.adjustSize()
 
+      logging.info("SequenceTableView.insertRow() is done")
+
     def removeRowKeepStepOff(self, row):
-      logging.info("SequenceTableView::removeRowKeepStepOff() is running")
+
+      logging.info("SequenceTableView.removeRowKeepStepOff() is running")
+
       self.model.removeRowsKeepStepOff(row, 1)
       #self.adjustSize()
 
+      logging.info("SequenceTableView.removeRowKeepStepOff() is done")
+
     def removeRowKeepStartOff(self, row):
-      logging.info("SequenceTableView::removeRowKeepStartOff() is running")
+
+      logging.info("SequenceTableView.removeRowKeepStartOff() is running")
+
       self.model.removeRowsKeepStartOff(row, 1)
       #self.adjustSize()
+
+      logging.info("SequenceTableView.removeRowKeepStartOff() is done")
 
 class SequenceDialog(QWidget):
 
@@ -708,7 +747,7 @@ class SequenceDialog(QWidget):
         Refer to NOTE02
         """
 
-        logging.info('button down has been pressed')
+        logging.info('SequenceDialog.btnDownAction() is running')
 
         series = self.__model.getSeries()
 
@@ -737,26 +776,37 @@ class SequenceDialog(QWidget):
 
         self.__update_equal_not_equal(SequenceState.EQUAL)
 
+        logging.info('SequenceDialog.btnDownAction() is done')
+
     def btnUpAction(self):
         """
         Refer to NOTE02
         """
-        logging.info('button up has been pressed')
+        logging.info('SequenceDialog.btnUpAction() is running')
+
         self.__upload_sequence()
+
+        logging.info('SequenceDialog.btnUpAction() is done')
 
     def btnStartAction(self):
         """
         Refer to NOTE02
         """
-        logging.info('button start has been pressed')
+        logging.info('SequenceDialog.btnStartAction() is running')
+
         self.pvStart.put(1)
+
+        logging.info('SequenceDialog.btnStartAction() is done')
 
     def btnStopAction(self):
         """
         Refer to NOTE02
         """
-        logging.info('button stop has been pressed')
+        logging.info('SequenceDialog.btnStopAction() is running')
+
         self.pvStop.put(1)
+
+        logging.info('SequenceDialog.btnStopAction() is done')
 
     def rep_config_changed(self):
         """
@@ -811,24 +861,30 @@ class SequenceDialog(QWidget):
         """
         Refer to NOTE02
         """
-        logging.info('button "insert row" has been pressed')
+        logging.info('SequenceDialog.btnInsertRowAction() is running')
+
         self.__model.insertRows(self.__model.rowCount(self), 1)
+
+        logging.info('SequenceDialog.btnInsertRowAction() is done')
 
     def btnRemoveRowAction(self):
         """
         Refer to NOTE02
         """
-        logging.info('button "remove row" has been pressed')
+        logging.info('SequenceDialog.btnRemoveRowAction() is running')
+
         self.__model.removeRowsKeepStepOff(self.__model.rowCount(self) - 1, 1)
+
+        logging.info('SequenceDialog.btnRemoveRowAction() is done')
 
     def __update_max_length(self, max_length):
         """
         Refer to NOTE02
         """
 
-        logging.info('__update_max_length() is running')
+        logging.info('SequenceDialog.__update_max_length() is running')
         self.__model.setMaxLength(max_length)
-        logging.info('__update_max_length() is done')
+        logging.info('SequenceDialog.__update_max_length() is done')
 
     def __update_rep_config(self, value):
         """
@@ -852,7 +908,7 @@ class SequenceDialog(QWidget):
         Refer to NOTE02
         """
 
-        logging.info('__upload_sequence() is running')
+        logging.info('SequenceDialog.__upload_sequence() is running')
 
         series = [None] * len(self.__localEvents)
 
@@ -910,7 +966,7 @@ class SequenceDialog(QWidget):
 
         self.__update_equal_not_equal(SequenceState.EQUAL)
 
-        logging.info('__upload_sequence() is done')
+        logging.info('SequenceDialog.__upload_sequence() is done')
 
 
     def __update_equal_not_equal(self, state, series_index=None, series_ioc=None):
@@ -918,7 +974,7 @@ class SequenceDialog(QWidget):
         Refer to NOTE02
         """
         
-        logging.info('__update_equal_not_equal() is running')
+        logging.info('SequenceDialog.__update_equal_not_equal() is running')
 
         if state is SequenceState.CHECK:
             logging.debug('__update_equal_not_equal() state=%s, series_index=%s, series_ioc=%s',
@@ -944,12 +1000,14 @@ class SequenceDialog(QWidget):
         else:
             raise RunTimeError('unexpected state received')
 
+        logging.info('SequenceDialog.__update_equal_not_equal() is done')
+
     def __update_run_status(self, pvname, value):
         """
         Refer to NOTE02
         """
 
-        logging.info('_update_run_status() is running')
+        logging.info('SequenceDialog._update_run_status() is running')
 
         if pvname == self.pvStatus.pvname:
             if value == 0:
@@ -969,7 +1027,7 @@ class SequenceDialog(QWidget):
         else:
             raise RunTimeError('run status pvs callback called for unexpected pv')
 
-        logging.info('_update_run_status() is done')
+        logging.info('SequenceDialog._update_run_status() is done')
 
     def __update_start_config(self, pvname, value, char_value):
         """
