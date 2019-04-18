@@ -419,9 +419,9 @@ class SequenceDialog(QWidget):
         self.__btnUp.clicked.connect(self.btnUpAction)
         self.__btnStart.clicked.connect(self.btnStartAction)
         self.__btnStop.clicked.connect(self.btnStopAction)
-        self.__sb_repetitions.valueChanged.connect(self.rep_config_changed)
-        self.__rbtn_repetitions.toggled.connect(self.rep_config_changed)
-        self.__rbtn_forever.toggled.connect(self.rep_config_changed)
+        self.__sb_repetitions.editingFinished.connect(self.rep_config_changed)
+        self.__rbtn_forever.clicked.connect(self.rep_config_changed)
+        self.__rbtn_repetitions.clicked.connect(self.rep_config_changed)
         self.__rbtn_immediatly.clicked.connect(self.start_config_changed)
         self.__rbtn_modulo.clicked.connect(self.start_config_changed)
         self.__leditDivisor.editingFinished.connect(self.start_config_changed)
@@ -639,8 +639,12 @@ class SequenceDialog(QWidget):
         """
         Refer to NOTE01
         """
-        logging.info('pv Cycles has changed, value=' + char_value)
+        logging.info('SequenceDialog.__on_pvs_rep_conf_change() is running')
+
+        logging.debug('pv %s has changed, new value=%s', pvname, char_value)
         self.emit(SIGNAL("update_rep_config"), value)
+
+        logging.info('SequenceDialog.__on_pvs_rep_conf_change() is done')
 
     def __on_pvs_seq_change(self, pvname=None, value=None, char_value=None,
         **kw):
@@ -743,12 +747,20 @@ class SequenceDialog(QWidget):
         """
         Refer to NOTE02
         """
-        logging.info('repetition config has been changed')
+
+        logging.info('SequenceDialog.rep_config_changed() is running')
+
         if self.__rbtn_forever.isChecked():
             repetitions = 0
         else:
             repetitions = self.__sb_repetitions.value()
-        self.pvCycles.put(repetitions)
+
+        if repetitions != self.pvCycles.get():
+            logging.debug('put rep config cycles=%d to pv', repetitions)
+            self.pvCycles.put(repetitions)
+
+        logging.info('SequenceDialog.rep_config_changed() is done')
+
     def start_config_changed(self):
         """
         Refer to NOTE02
@@ -808,15 +820,17 @@ class SequenceDialog(QWidget):
         Refer to NOTE02
         """
 
-        logging.info('__update_rep_config() is running')
+        logging.info('SequenceDialog.__update_rep_config() is running')
 
         if value == 0:
             self.__rbtn_forever.setChecked(True)
+            logging.debug('updating radio buttons')
         else:
+            logging.debug('updating radio buttons and spin box, value=%s', value)
             self.__rbtn_repetitions.setChecked(True)
             self.__sb_repetitions.setValue(value)
 
-        logging.info('__update_rep_config() is done')
+        logging.info('SequenceDialog.__update_rep_config() is done')
 
     def __upload_sequence(self):
         """
