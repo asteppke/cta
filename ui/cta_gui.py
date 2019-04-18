@@ -635,8 +635,12 @@ class SequenceDialog(QWidget):
         """
         Refer to NOTE01
         """
-        logging.info('pv max length has changed, value=' + char_value)
+        logging.info('SequenceDialog.__on_pv_max_length_change() is running')
+
+        logging.debug('pv %s has changed, new value=%s', pvname, char_value)
         self.emit(SIGNAL("set_max_length"), value)
+
+        logging.info('SequenceDialog.__on_pv_max_length_change() is done')
 
     def __on_pvs_rep_conf_change(self, pvname=None, value=None, char_value=None,
         **kw):
@@ -656,11 +660,13 @@ class SequenceDialog(QWidget):
         Refer to NOTE01
         """
 
+        logging.info('SequenceDialog.__on_pvs_seq_change() is running')
+
         # extract which series has changed
         po = re.compile('.*seq[0-9]*Ser([0-9]*)-Data-I')
         mo = po.search(pvname)
         series_index = int(mo.group(1))
-        logging.info('pv series %s has changed, value=%s', str(series_index), str(value))
+        logging.debug('pv %s has changed, new value=%s', pvname , str(value))
 
         # transform value to list
         if len(value) > 1:
@@ -670,15 +676,20 @@ class SequenceDialog(QWidget):
 
         self.emit(SIGNAL("update_equal_not_equal"), SequenceState.CHECK, series_index, series_ioc)
 
+        logging.info('SequenceDialog.__on_pvs_seq_change() is done')
+
     def __on_pvs_run_status_change(self, pvname=None, value=None, char_value=None,
         **kw):
         """
         Refer to NOTE01
         """
 
-        logging.info('pv status has changed, value=' + char_value)
+        logging.info('SequenceDialog.__on_pvs_run_status_change() is running')
 
+        logging.debug('pv %s has changed, new value=%s', pvname, char_value)
         self.emit(SIGNAL("update_run_status"), pvname, value)
+
+        logging.info('SequenceDialog.__on_pvs_run_status_change() is done')
 
     def __on_pvs_start_config_change(self, pvname=None, value=None, char_value=None,
         **kw):
