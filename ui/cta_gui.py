@@ -450,6 +450,10 @@ class SequenceDialog(QWidget):
         # save args for later
         self.args = args 
 
+        # init state
+        self.divisor = 1
+        self.offset = 0
+
         # create widgets
         self.createWidgets()
 
@@ -843,17 +847,37 @@ class SequenceDialog(QWidget):
                 logging.debug('put start config mode=1 to pv')
                 self.pvSCfgMode.put(1)
 
-        if self.__leditDivisor.text() != '':
+        # divisor ---------------------
+        # validate user input
+        try:
             divisor = int(self.__leditDivisor.text())
-            if divisor != self.pvSCfgModDivisor.get():
-                logging.debug('put start config divisor=%s to pv', divisor)
-                self.pvSCfgModDivisor.put(divisor)
+        except ValueError:
+            divisor = self.divisor
+            self.__leditDivisor.setText(str(divisor))
+        if divisor <= 0:
+            divisor = self.divisor
+            self.__leditDivisor.setText(str(divisor))
+        # update state and caput
+        self.divisor = divisor
+        if divisor != self.pvSCfgModDivisor.get():
+            logging.debug('put start config divisor=%s to pv', divisor)
+            self.pvSCfgModDivisor.put(divisor)
 
-        if self.__leditOffset.text() != '':
+        # offset ----------------------
+        # validate user input
+        try:
             offset = int(self.__leditOffset.text())
-            if offset != self.pvSCfgModOffset.get():
-                logging.debug('put start config offset=%s to pv', offset)
-                self.pvSCfgModOffset.put(offset)
+        except ValueError:
+            offset = self.offset
+            self.__leditOffset.setText(str(offset))
+        if offset < 0 or offset >= divisor:
+            offset = self.offset
+            self.__leditOffset.setText(str(offset))
+        # update state and caput
+        self.offset = offset
+        if offset != self.pvSCfgModOffset.get():
+            logging.debug('put start config offset=%s to pv', offset)
+            self.pvSCfgModOffset.put(offset)
 
         logging.info('SequenceDialog.start_config_changed() is done')
 

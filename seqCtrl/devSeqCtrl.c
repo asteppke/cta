@@ -156,9 +156,20 @@ long devSeqCtrlWriteLongout(longoutRecord *record) {
       }
       break;
     case 3:
-      SetSCfgModuloDivisor((uint32_t)record->val);
+      if (record->val <= 0) {
+        errlogSevPrintf(errlogFatal, "%s: record<<%s>>: divisor <= 0 is invalid\n"
+          , __func__, record->name);
+        status = -1;
+      }
+      else
+        SetSCfgModuloDivisor((uint32_t)record->val);
       break;
     case 4:
+      if (record->val < 0) {
+        errlogSevPrintf(errlogFatal, "%s: record<<%s>>: offset < 0 is invalid\n"
+          , __func__, record->name);
+        status = -1;
+      }
       SetSCfgModuloOffset((uint32_t)record->val);
       break;
     default:

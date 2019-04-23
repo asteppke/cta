@@ -362,6 +362,10 @@ class CtaLib:
             (pulseId % divisor) - offset == 0 is true.
             In this mode the keys 'divisor' and 'offset' may be used to specify the
             corresponding values.
+            Valid range for divisor is [1, 2^31-1].
+            Valid range for offset is [0, 2^31-1].
+            Furthermore divisor and offset depend on each other. The offset must be
+            smaller than the divisor.
 
         Arguments
         config: dictionary describing the start configuration
@@ -374,17 +378,36 @@ class CtaLib:
         if not is_all_connected:
             raise RuntimeError('Some PV(s) is/are not connected')
 
-        self._pvs['Ctrl-SCfgMode-I'].put(config['mode'].value)
+        # check arguments
+        if 'mode' not in config:
+            raise ValueError('Argument config does not contain mandatory key '
+                             'mode')
+        if config['mode'] != CtaLib.StartMode.IMMEDIATE and config['mode'] != CtaLib.StartMode.MODULO:
+            raise ValueError('Argument config contains invalid mode')
+        if config['mode'] == CtaLib.StartMode.MODULO:
+            if 'divisor' in config:
+                if config['divisor'] <= 0 or config['divisor'] > 2**31-1:
+                    raise ValueError('Argument config contains invalid divisor')
+                if 'offset' not in config:
+                    if config['divisor'] <= self._pvs['Ctrl-SCfgModOffset-I'].get():
+                        raise ValueError('Argument config contains invalid divisor')
+            if 'offset' in config:
+                if config['offset'] < 0 or config['offset'] > 2**31-1:
+                    raise ValueError('Argument config contains invalid offset')
+                if 'divisor' in config:
+                    if config['offset'] >= config['divisor']:
+                        raise ValueError('Argument config contains invalid offset')
+                else:
+                    if config['offset'] >= self._pvs['Ctrl-SCfgModDivisor-I'].get():
+                        raise ValueError('Argument config contains invalid offset')
 
-        if config['mode'] == CtaLib.StartMode.IMMEDIATE:
-            pass
-        elif config['mode'] == CtaLib.StartMode.MODULO:
+        # caput values
+        self._pvs['Ctrl-SCfgMode-I'].put(config['mode'].value)
+        if config['mode'] == CtaLib.StartMode.MODULO:
             if 'divisor' in config:
                 self._pvs['Ctrl-SCfgModDivisor-I'].put(config['divisor'])
             if 'offset' in config:
                 self._pvs['Ctrl-SCfgModOffset-I'].put(config['offset'])
-        else:
-            raise RuntimeError('Invalid start configuration received')
 
     def get_start_config(self):
         """
