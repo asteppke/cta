@@ -48,6 +48,7 @@ class CtaLib:
         # create attributes for callback support
         self._run_status_callbacks = list()
         self._rep_config_callbacks = list()
+        self._start_config_callbacks = list()
         self._sequence_callbacks = list()
 
         # create pv objects
@@ -70,14 +71,17 @@ class CtaLib:
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-SCfgMode-I'
         self._pvs['Ctrl-SCfgMode-I'] = PV(
             pv_name,
+            callback=self._start_config_callback,
             connection_callback=self._connection_callback)
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-SCfgModDivisor-I'
         self._pvs['Ctrl-SCfgModDivisor-I'] = PV(
             pv_name,
+            callback=self._start_config_callback,
             connection_callback=self._connection_callback)
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-SCfgModOffset-I'
         self._pvs['Ctrl-SCfgModOffset-I'] = PV(
             pv_name,
+            callback=self._start_config_callback,
             connection_callback=self._connection_callback)
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-Start-I'
         self._pvs['Ctrl-Start-I'] = PV(
@@ -576,6 +580,32 @@ class CtaLib:
             rep_config_cb['user_object'] = user_object
         self._rep_config_callbacks.append(rep_config_cb)
 
+    def register_start_config_callback(self, callback, user_object=None):
+        """
+        This function can be used to register a callback function which is
+        called if the start config changed.
+        Optionally a user object can be provided which will be passed to the callback
+        function when it is called.
+
+        The following argument will be passed to the callback function:
+            config: dictionary where the key indicates which start config item
+                    has changed and its new value
+
+        Keep your callback function short.
+
+        Mandatory arguments:
+        callback: Function to be called.
+
+        Optional arguments:
+        user_object: object to be passed to callback function
+        """
+
+        sc_cb = {}
+        sc_cb['callback'] = callback
+        if user_object is not None:
+            sc_cb['user_object'] = user_object
+        self._start_config_callbacks.append(sc_cb)
+
     def register_sequence_callback(self, callback, user_object=None):
         """
         This function can be used to register a callback function which is
@@ -755,6 +785,37 @@ class CtaLib:
             else:
                 rep_config_cb['callback'](config)
         logging.info('calling rep config callbacks done')
+
+    def _start_config_callback(self, **kwargs):
+        """
+        Callback function which is called when the start config PVs change the value.
+        It is used to call user callback functions which registered for
+        this event.
+        """
+        logging.info('_start_config_callback() is running (pv=%s, value=%s)',
+                     kwargs['pvname'], str(kwargs['value']))
+
+        if kwargs['pvname'] == self._pvs['Ctrl-SCfgMode-I'].pvname:
+            if kwargs['value'] == CtaLib.StartMode.IMMEDIATE:
+                config = {'mode': CtaLib.StartMode.IMMEDIATE}
+            elif kwargs['value'] == CtaLib.StartMode.MODULO:
+                config = {'mode': CtaLib.StartMode.MODULO}
+            else:
+                raise RuntimeError('Invalid mode received')
+        elif kwargs['pvname'] == self._pvs['Ctrl-SCfgModDivisor-I'].pvname:
+            config = {'divisor': int(kwargs['value'])}
+        elif kwargs['pvname'] == self._pvs['Ctrl-SCfgModOffset-I'].pvname:
+            config = {'offset': int(kwargs['value'])}
+        else:
+            raise RuntimeError('lib received status callback from unexpected pv')
+
+        logging.info('calling start config callbacks next')
+        for start_config_cb in self._start_config_callbacks:
+            if 'user_object' in start_config_cb:
+                start_config_cb['callback'](config, start_config_cb['user_object'])
+            else:
+                start_config_cb['callback'](config)
+        logging.info('calling start config callbacks done')
 
     def _sequence_callback(self, **kwargs):
         """

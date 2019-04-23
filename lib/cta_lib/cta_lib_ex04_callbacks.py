@@ -80,6 +80,57 @@ def repetition_config_callback_2(config):
     else:
         RuntimeError('Invalid mode received')
     
+def start_config_callback_1(config, lib):
+    """
+    function to demonstrate callaback functionality
+    """
+
+    # use config
+    if 'mode' in config:
+        if config['mode'] == CtaLib.StartMode.IMMEDIATE:
+            print(">> start config callback 1 has been called (mode=immediately)")
+        elif config['mode'] == CtaLib.StartMode.MODULO:
+            print(">> start config callback 1 has been called (mode=modulo)")
+        else:
+            RuntimeError('Invalid mode received')
+    elif 'divisor' in config:
+        print(">> start config callback 1 has been called (divisor=" +
+              str(config['divisor']) + ")")
+    elif 'offset' in config:
+        print(">> start config callback 1 has been called (offset=" +
+              str(config['offset']) + ")")
+    else:
+        RuntimeError('Invalid config received')
+    
+    # use lib
+    if lib.is_running():
+        is_running = " "
+    else:
+        is_running = " not "
+    print(">> Reading back is_running. Sequence is" + is_running + "running")
+
+def start_config_callback_2(config):
+    """
+    function to demonstrate callaback functionality
+    """
+
+    # use config
+    if 'mode' in config:
+        if config['mode'] == CtaLib.StartMode.IMMEDIATE:
+            print(">> start config callback 2 has been called (mode=immediately)")
+        elif config['mode'] == CtaLib.StartMode.MODULO:
+            print(">> start config callback 2 has been called (mode=modulo)")
+        else:
+            RuntimeError('Invalid mode received')
+    elif 'divisor' in config:
+        print(">> start config callback 2 has been called (divisor=" +
+              str(config['divisor']) + ")")
+    elif 'offset' in config:
+        print(">> start config callback 2 has been called (offset=" +
+              str(config['offset']) + ")")
+    else:
+        RuntimeError('Invalid config received')
+
 def sequence_callback_1(sequence, lib):
     """
     function to demonstrate callaback functionality
@@ -126,6 +177,8 @@ def main():
     lib.register_run_status_callback(run_status_callback_2)
     lib.register_repetition_config_callback(repetition_config_callback_1, lib)
     lib.register_repetition_config_callback(repetition_config_callback_2)
+    lib.register_start_config_callback(start_config_callback_1, lib)
+    lib.register_start_config_callback(start_config_callback_2)
     lib.register_sequence_callback(sequence_callback_1, lib)
     lib.register_sequence_callback(sequence_callback_2)
 
@@ -157,11 +210,19 @@ def main():
     lib.upload(sequence)
 
     # set repetition configuration
+    time.sleep(1)
     print(">> setting repetition configuration (10 times)")
     lib.set_repetition_config(config={'mode': CtaLib.RepetitionMode.FOREVER})
     lib.set_repetition_config(config={'mode': CtaLib.RepetitionMode.NTIMES, 'n': 10})
 
+    # set start configuration
+    time.sleep(1)
+    print(">> setting start configuration (immediate)")
+    lib.set_start_config(config={'mode': CtaLib.StartMode.MODULO})
+    lib.set_start_config(config={'mode': CtaLib.StartMode.IMMEDIATE})
+
     # start
+    time.sleep(1)
     print(">> starting")
     lib.start()
     time.sleep(0.2) # wait for the cta to process the start command
