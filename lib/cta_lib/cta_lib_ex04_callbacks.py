@@ -10,37 +10,54 @@ def run_status_callback_1(data, lib):
     """
     function to demonstrate callaback functionality
     """
+
     # use data
-    p_v, value = list(data.items())[0]
+    if 'status' in data:
+        p_v = 'status'
+        value = data['status']
+    elif 'started at' in data:
+        p_v = 'started at'
+        value = data['started at']
+    else:
+        raise RuntimeError('Invalid data received')
     print(">> status callback 1 has been called (pv=" + p_v + ", value=" + str(value) + ")")
 
+    # use lib
     if p_v == 'started at':
         # get started at
         print('>> reading back at what pulse id the sequence was started')
         started_at = lib.get_started_at()
         print('>> the sequence started at pulse id ' + str(started_at))
 
-def run_status_callback_2(data, lib):
+def run_status_callback_2(data):
     """
     function to demonstrate callaback functionality
     """
     # use data
-    p_v, value = list(data.items())[0]
+    if 'status' in data:
+        p_v = 'status'
+        value = data['status']
+    elif 'started at' in data:
+        p_v = 'started at'
+        value = data['started at']
+    else:
+        raise RuntimeError('Invalid data received')
     print(">> status callback 2 has been called (pv=" + p_v + ", value=" + str(value) + ")")
 
-    if p_v == 'started at':
-        # get started at
-        print('>> reading back at what pulse id the sequence was started')
-        started_at = lib.get_started_at()
-        print('>> the sequence started at pulse id ' + str(started_at))
-
-def sequence_callback_1(sequence, user_object):
+def sequence_callback_1(sequence, lib):
     """
     function to demonstrate callaback functionality
     """
-    print(">> sequence callback 1 has been called (sequence=" + str(sequence) + ")")
 
-def sequence_callback_2(sequence, user_object):
+    if lib.is_running():
+        is_running = ' '
+    else:
+        is_running = ' not '
+
+    print(">> sequence callback 1 has been called (sequence=" + str(sequence)
+          + "). The sequence is" + is_running + "running.")
+
+def sequence_callback_2(sequence):
     """
     function to demonstrate callaback functionality
     """
@@ -70,9 +87,9 @@ def main():
 
     # register callbacks
     lib.register_run_status_callback(run_status_callback_1, lib)
-    lib.register_run_status_callback(run_status_callback_2, lib)
+    lib.register_run_status_callback(run_status_callback_2)
     lib.register_sequence_callback(sequence_callback_1, lib)
-    lib.register_sequence_callback(sequence_callback_2, lib)
+    lib.register_sequence_callback(sequence_callback_2)
 
     # create sequence
     sequence = {}

@@ -523,51 +523,63 @@ class CtaLib:
 
         return int(started_at)
 
-    def register_run_status_callback(self, callback, user_object):
+    def register_run_status_callback(self, callback, user_object=None):
         """
         This function can be used to register a callback function which is
         called if the run status of the sequence controller changed.
-        A user object can be provided which will be passed to the callback
+        Optionally a user object can be provided which will be passed to the callback
         function when it is called.
 
-        The following arguments will be passed to the callback function:
+        The following argument will be passed to the callback function:
             data: dictionary where the key indicates which run status item
                   has changed and its new value
+
+        The following argument will be passed to the callback function if it
+        has been provided on register:
             user_object: the argument which was provided on register
 
         Keep your callback function short.
 
-        Arguments
+        Mandatory arguments:
         callback: Function to be called.
+
+        Optional arguments:
         user_object: object to be passed to callback function
         """
 
         rs_cb = {}
         rs_cb['callback'] = callback
-        rs_cb['user_object'] = user_object
+        if user_object is not None:
+            rs_cb['user_object'] = user_object
         self._run_status_callbacks.append(rs_cb)
 
-    def register_sequence_callback(self, callback, user_object):
+    def register_sequence_callback(self, callback, user_object=None):
         """
         This function can be used to register a callback function which is
         called if the sequence on the IOC has changed.
 
         Refer to the upload method for a definition of a sequence.
 
-        The following arguments will be passed to the callback function:
+        The following argument will be passed to the callback function:
             sequence: sequence containing the series which has changed
+
+        The following argument will be passed to the callback function if
+        it has been provided on register:
             user_object: the argument which was provided on register
 
         Keep your callback function short.
 
-        Arguments
+        Mandatory arguments
         callback: Function to be called
+
+        Optional arguments
         user_object: object to be passed to callback function
         """
 
         seq_cb = {}
         seq_cb['callback'] = callback
-        seq_cb['user_object'] = user_object
+        if user_object is not None:
+            seq_cb['user_object'] = user_object
         self._sequence_callbacks.append(seq_cb)
 
     def check_sequence(self, seq):
@@ -694,7 +706,10 @@ class CtaLib:
 
         logging.info('calling run status callbacks next')
         for scb in self._run_status_callbacks:
-            scb['callback'](data, scb['user_object'])
+            if 'user_object' in scb:
+                scb['callback'](data, scb['user_object'])
+            else:
+                scb['callback'](data)
         logging.info('calling run status callbacks done')
 
     def _sequence_callback(self, **kwargs):
@@ -719,7 +734,10 @@ class CtaLib:
         # call callbacks
         logging.info('calling sequence callbacks next')
         for seq_cb in self._sequence_callbacks:
-            seq_cb['callback'](seq, seq_cb['user_object'])
+            if 'user_object' in seq_cb:
+                seq_cb['callback'](seq, seq_cb['user_object'])
+            else:
+                seq_cb['callback'](seq)
         logging.info('calling sequence callbacks done')
 
         logging.info('_sequence_callback() is done')
