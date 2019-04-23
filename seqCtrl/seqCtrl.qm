@@ -93,9 +93,11 @@ SeqCtrl_SetIsEnabled(false);</exit>
          <choice>
           <guard brief="mode == START_MODULO">(me-&gt;config.start.mode == START_MODULO)
 </guard>
+          <action>/*printf(&quot;pid=%&quot; PRIu64 &quot;, divisor=%&quot; PRIu32 &quot;, offset=%&quot; PRIu32 &quot;\n&quot;, Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id, me-&gt;config.start.moduloDivisor, me-&gt;config.start.moduloOffset);*/</action>
           <choice target="../../../../../3">
            <guard brief="(pulse id % divisor) - offset == 0">((Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id % me-&gt;config.start.moduloDivisor) - me-&gt;config.start.moduloOffset) == 0</guard>
-           <action brief="SeqCtrl_SetStartedAt(pulse_id); SeqCtrl_SetIsEnabled(true);">SeqCtrl_SetStartedAt(Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id);
+           <action brief="SeqCtrl_SetStartedAt(pulse_id); SeqCtrl_SetIsEnabled(true);">/*printf(&quot;-&gt; pid=%&quot; PRIu64 &quot;, divisor=%&quot; PRIu32 &quot;, offset=%&quot; PRIu32 &quot;\n&quot;, Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id, me-&gt;config.start.moduloDivisor, me-&gt;config.start.moduloOffset);*/
+SeqCtrl_SetStartedAt(Q_EVT_CAST(PulseIdEvt)-&gt;pulse_id);
 SeqCtrl_SetIsEnabled(true);</action>
            <choice_glyph conn="81,58,4,0,9">
             <action box="1,2,26,6"/>
@@ -228,6 +230,7 @@ epicsMutexUnlock(g_configMutex);</code>
 
 #include &lt;epicsMutex.h&gt;
 #include &lt;stdio.h&gt;
+#include &lt;inttypes.h&gt;
 
 
 Q_DEFINE_THIS_FILE
