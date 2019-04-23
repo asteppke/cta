@@ -1070,9 +1070,11 @@ class SequenceDialog(QWidget):
                 raise RunTimeError('Invalid mode for start configuration received')
         elif pvname == self.pvSCfgModDivisor.pvname:
             logging.debug('updating ledit divisor, value=' + char_value)
+            self.divisor = value
             self.__leditDivisor.setText(char_value)
         elif pvname == self.pvSCfgModOffset.pvname:
             logging.debug('updating ledit offset, value=' + char_value)
+            self.offset = value
             self.__leditOffset.setText(char_value)
         else:
             raise RunTimeError('Unexpected call of pv callback function')
