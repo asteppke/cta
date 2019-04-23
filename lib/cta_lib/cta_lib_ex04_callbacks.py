@@ -44,6 +44,42 @@ def run_status_callback_2(data):
         raise RuntimeError('Invalid data received')
     print(">> status callback 2 has been called (pv=" + p_v + ", value=" + str(value) + ")")
 
+def repetition_config_callback_1(config, lib):
+    """
+    function to demonstrate callaback functionality
+    """
+
+    # use config
+    if config['mode'] == CtaLib.RepetitionMode.FOREVER:
+        print(">> repetition config callback 1 has been called (forever)")
+    elif config['mode'] == CtaLib.RepetitionMode.NTIMES:
+        print(">> repetition config callback 1 has been called (" + str(config['n'])
+              + " times)")
+    else:
+        RuntimeError('Invalid mode received')
+    
+    # use lib
+    if lib.is_running():
+        is_running = " "
+    else:
+        is_running = " not "
+    print(">> Reading back is_running. Sequence is" + is_running + "running")
+
+    
+def repetition_config_callback_2(config):
+    """
+    function to demonstrate callaback functionality
+    """
+
+    # use config
+    if config['mode'] == CtaLib.RepetitionMode.FOREVER:
+        print(">> repetition config callback 2 has been called (forever)")
+    elif config['mode'] == CtaLib.RepetitionMode.NTIMES:
+        print(">> repetition config callback 2 has been called (" + str(config['n'])
+              + " times)")
+    else:
+        RuntimeError('Invalid mode received')
+    
 def sequence_callback_1(sequence, lib):
     """
     function to demonstrate callaback functionality
@@ -88,6 +124,8 @@ def main():
     # register callbacks
     lib.register_run_status_callback(run_status_callback_1, lib)
     lib.register_run_status_callback(run_status_callback_2)
+    lib.register_repetition_config_callback(repetition_config_callback_1, lib)
+    lib.register_repetition_config_callback(repetition_config_callback_2)
     lib.register_sequence_callback(sequence_callback_1, lib)
     lib.register_sequence_callback(sequence_callback_2)
 
@@ -120,6 +158,7 @@ def main():
 
     # set repetition configuration
     print(">> setting repetition configuration (10 times)")
+    lib.set_repetition_config(config={'mode': CtaLib.RepetitionMode.FOREVER})
     lib.set_repetition_config(config={'mode': CtaLib.RepetitionMode.NTIMES, 'n': 10})
 
     # start

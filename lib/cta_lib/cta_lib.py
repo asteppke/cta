@@ -47,6 +47,7 @@ class CtaLib:
 
         # create attributes for callback support
         self._run_status_callbacks = list()
+        self._rep_config_callbacks = list()
         self._sequence_callbacks = list()
 
         # create pv objects
@@ -64,6 +65,7 @@ class CtaLib:
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-Cycles-I'
         self._pvs['Ctrl-Cycles-I'] = PV(
             pv_name,
+            callback=self._rep_config_callback,
             connection_callback=self._connection_callback)
         pv_name = device + ':seq' + str(sequence) + 'Ctrl-SCfgMode-I'
         self._pvs['Ctrl-SCfgMode-I'] = PV(
@@ -534,10 +536,6 @@ class CtaLib:
             data: dictionary where the key indicates which run status item
                   has changed and its new value
 
-        The following argument will be passed to the callback function if it
-        has been provided on register:
-            user_object: the argument which was provided on register
-
         Keep your callback function short.
 
         Mandatory arguments:
@@ -553,6 +551,31 @@ class CtaLib:
             rs_cb['user_object'] = user_object
         self._run_status_callbacks.append(rs_cb)
 
+    def register_repetition_config_callback(self, callback, user_object=None):
+        """
+        This function can be used to register a callback function which is
+        called if the repetition configuration has changed.
+        Optionally a user object can be provided which will be passed to the callback
+        function when it is called.
+
+        The callback function is called with a dictionary argument which has the
+        same format as the dictionary returned by set_repetition_config().
+
+        Keep your callback function short.
+
+        Mandatory arguments:
+        callback: Function to be called.
+
+        Optional arguments:
+        user_object: object to be passed to callback function
+        """
+
+        rep_config_cb = {}
+        rep_config_cb['callback'] = callback
+        if user_object is not None:
+            rep_config_cb['user_object'] = user_object
+        self._rep_config_callbacks.append(rep_config_cb)
+
     def register_sequence_callback(self, callback, user_object=None):
         """
         This function can be used to register a callback function which is
@@ -562,10 +585,6 @@ class CtaLib:
 
         The following argument will be passed to the callback function:
             sequence: sequence containing the series which has changed
-
-        The following argument will be passed to the callback function if
-        it has been provided on register:
-            user_object: the argument which was provided on register
 
         Keep your callback function short.
 
@@ -711,6 +730,31 @@ class CtaLib:
             else:
                 scb['callback'](data)
         logging.info('calling run status callbacks done')
+
+    def _rep_config_callback(self, **kwargs):
+        """
+        Callback function which is called when the rep config PV changes the value.
+        It is used to call user callback functions which registered for
+        this event.
+        """
+        logging.info('_rep_config_callback() is running (pv=%s, value=%s)',
+                     kwargs['pvname'], str(kwargs['value']))
+
+        repetitions = int(kwargs['value'])
+        config = {}
+        if repetitions == 0:
+            config['mode'] = CtaLib.RepetitionMode.FOREVER
+        else:
+            config['mode'] = CtaLib.RepetitionMode.NTIMES
+            config['n'] = repetitions
+
+        logging.info('calling rep config callbacks next')
+        for rep_config_cb in self._rep_config_callbacks:
+            if 'user_object' in rep_config_cb:
+                rep_config_cb['callback'](config, rep_config_cb['user_object'])
+            else:
+                rep_config_cb['callback'](config)
+        logging.info('calling rep config callbacks done')
 
     def _sequence_callback(self, **kwargs):
         """
