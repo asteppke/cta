@@ -12,6 +12,8 @@ from enum import IntEnum
 import numpy
 from epics import PV
 
+# pylint: disable=R0902
+
 class CtaLib:
     """
     Create an object of this class to control one sequence of a CTA.
@@ -351,7 +353,7 @@ class CtaLib:
         IMMEDIATE = 0
         MODULO = 1
 
-    def set_start_config(self, *, config):
+    def set_start_config(self, *, config): # pylint: disable=R0912
         """
         Set the start configuration.
 
@@ -388,7 +390,8 @@ class CtaLib:
         if 'mode' not in config:
             raise ValueError('Argument config does not contain mandatory key '
                              'mode')
-        if config['mode'] != CtaLib.StartMode.IMMEDIATE and config['mode'] != CtaLib.StartMode.MODULO:
+        if (config['mode'] != CtaLib.StartMode.IMMEDIATE and
+                config['mode'] != CtaLib.StartMode.MODULO):
             raise ValueError('Argument config contains invalid mode')
         if config['mode'] == CtaLib.StartMode.MODULO:
             if 'divisor' in config:

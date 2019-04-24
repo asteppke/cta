@@ -57,7 +57,7 @@ def repetition_config_callback_1(config, lib):
               + " times)")
     else:
         RuntimeError('Invalid mode received')
-    
+
     # use lib
     if lib.is_running():
         is_running = " "
@@ -65,7 +65,7 @@ def repetition_config_callback_1(config, lib):
         is_running = " not "
     print(">> Reading back is_running. Sequence is" + is_running + "running")
 
-    
+
 def repetition_config_callback_2(config):
     """
     function to demonstrate callaback functionality
@@ -79,7 +79,7 @@ def repetition_config_callback_2(config):
               + " times)")
     else:
         RuntimeError('Invalid mode received')
-    
+
 def start_config_callback_1(config, lib):
     """
     function to demonstrate callaback functionality
@@ -101,7 +101,7 @@ def start_config_callback_1(config, lib):
               str(config['offset']) + ")")
     else:
         RuntimeError('Invalid config received')
-    
+
     # use lib
     if lib.is_running():
         is_running = " "
@@ -150,7 +150,7 @@ def sequence_callback_2(sequence):
     """
     print(">> sequence callback 2 has been called (sequence=" + str(sequence) + ")")
 
-def main():
+def main(): # pylint: disable=R0915
     """
     The main function contains the example script.
     """
