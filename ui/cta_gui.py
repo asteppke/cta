@@ -847,14 +847,21 @@ class SequenceDialog(QWidget):
                 logging.debug('put start config mode=1 to pv')
                 self.pvSCfgMode.put(1)
 
-        # divisor ---------------------
-        # validate user input
+        # validate divisor and offset user input (int conversion)
         try:
             divisor = int(self.__leditDivisor.text())
         except ValueError:
             divisor = self.divisor
             self.__leditDivisor.setText(str(divisor))
-        if divisor <= 0:
+        try:
+            offset = int(self.__leditOffset.text())
+        except ValueError:
+            offset = self.offset
+            self.__leditOffset.setText(str(offset))
+
+        # divisor ---------------------
+        # validate user input (value)
+        if divisor <= 0 or divisor <= offset:
             divisor = self.divisor
             self.__leditDivisor.setText(str(divisor))
         # update state and caput
@@ -864,12 +871,7 @@ class SequenceDialog(QWidget):
             self.pvSCfgModDivisor.put(divisor)
 
         # offset ----------------------
-        # validate user input
-        try:
-            offset = int(self.__leditOffset.text())
-        except ValueError:
-            offset = self.offset
-            self.__leditOffset.setText(str(offset))
+        # validate user input (value)
         if offset < 0 or offset >= divisor:
             offset = self.offset
             self.__leditOffset.setText(str(offset))
