@@ -2,16 +2,13 @@
 # mandatory macros
 # ----------------
 # DN     -> device name
-# LENGTH -> max length for series
 # EOS    -> device name used to reference EOS PVs
-#
-# Optional macros:
-#  TRA -> enable (1) or disable (0) processing tracing
+# PIR    -> PV to read current pulse id from
 #
 # optional macros
 # ---------------
-# LEN = 2048
-# TR = 0
+# LEN -> max length of series (default=2048)
+# TR -> enable(1)/disable(0) record tracing (default=0)
 
 # cta -------------------------------------------------------------------------
 #
