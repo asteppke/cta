@@ -6,6 +6,10 @@ How to build and install cta_lib package in local conda environment
 []$ conda build conda-recipe
 []$ conda install --use-local cta_lib
 
+How to delete a local environment and everything in it
+------------------------------------------------------
+[]$ conda env remove --name cta_lib
+
 How to uninstall cta_lib package from local conda environment
 -------------------------------------------------------------
 []$ conda remove --name cta_lib cta_lib
