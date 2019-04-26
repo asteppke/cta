@@ -9,6 +9,7 @@
 \usepackage{xr} % cross-reference across files
 \usepackage{float} %for H positioning
 \usepackage{listings}
+\usepackage{makecell}
 \usepackage{gitinfo2}
 
 \externaldocument[TUT-]{tutorial}
@@ -146,11 +147,17 @@ The sequence can be downloaded (CTA to user interface).
 The number of times the sequence is repeated by the CTA can be set (integer or
 forever).
 \item
+The start condition can be set. When the condition is met, the CTA starts to
+send out the sequence of event codes in the timing stream. Currently the
+options to start the sequence immediately or based on the pulse id are
+supported.
+\item
 The CTA can be instructed to start inserting the sequence in the timing stream.
 \item
 The CTA can be instructed to stop inserting the sequence in the timing stream.
 \item
-The status of the CTA can be retrieved (stopped, running)
+The status of the CTA can be retrieved. It shows whether the CTA is running
+or stopped and it shows the pulse id at which the last sequence was started.
 \end{itemize}
 
 Refer to section \ref{sec:CtaExampes} for examples how an event code sequence
@@ -249,11 +256,16 @@ done with the context menu.
 
 \paragraph{start configuration:}
 The radio buttons in the \emph{start configuration} section can be used to
-define when CTA starts distributing the sequence on the IOC.
-Currently the only option is \emph{start immediately}. If this option is selected
-the CTA starts sending the event sequence immediately. The time between
-pressing the start button and the time the first event code is send
-is short but undefined.
+define the mode, which is used by the CTA, to starts sending out the sequence on
+the timing stream.
+Currently the modes \emph{start immediately} and
+\emph{start if ((pulseId \% divisor) - offset == 0)} are supported.
+In the mode \emph{start immediately} the CTA starts sending the event sequence
+immediately. The time between pressing the start button and the time the first
+event code is send is short but undefined.
+In the mode \emph{start if ((pulseId \% divisor) - offset == 0)} the first
+event code of the sequence is sent out when the if condition is met for the
+first time.
 
 \paragraph{repetition configuration:}
 The radio buttons in the \emph{repetition configuration} section can be used
@@ -261,8 +273,9 @@ to define how many times the sequence is repeated.
 
 \paragraph{run status:}
 The widgets in the \emph{run status} section can be used to start or stop
-event code sending of the CTA. The \emph{status} widget shows the current
-status of the CTA.
+event code sending of the CTA. Additionally the \emph{status} widget shows
+the current status of the CTA (running or stopped) and the \emph{started at}
+widget shows the pulse id at which the last sequence has been started.
 
 \subsection{Channel access}
 
@@ -284,7 +297,14 @@ for the CTA in ESA).
     \hline \$(P):seq0Ctrl-Cycles-I & number of repetitions (0 = forever, n = n times)\\
     \hline \$(P):seq0Ctrl-Start-I & start sequece (caput pv 1)\\
     \hline \$(P):seq0Ctrl-Stop-I& stop sequence (caput pv 1)\\
+    \hline \$(P):seq0Ctrl-SCfgMode-I &
+           \makecell {start config mode\\
+                      (0 = immediately,\\
+                      1 = if ((pulse id \% divisor) - offset == 0))}\\
+    \hline \$(P):seq0Ctrl-SCfgModDivisor-I & start config modulo divisor\\
+    \hline \$(P):seq0Ctrl-SCfgModOffset-I & start config modulo offset\\
     \hline \$(P):seq0Ctrl-IsRunning-O & 0 = stopped, 1 = running\\
+    \hline \$(P):seq0Ctrl-StartedAt-O & pulse id when sequence was started\\
     \hline \$(P):SerMaxLen-O & max length of sequence\\
     \hline
   \end{tabular}
@@ -296,6 +316,7 @@ CTA event codes.
 Listing \ref{lst:caput} show an example of how to upload and start a simple sequence
 on CTA in ESA.  
 
+\begin{minipage}{\linewidth}
 \begin{lstlisting}[caption={caput listing}, label={lst:caput}, linewidth=\columnwidth]
 caput SAR-CCTA-ESA:seq0Ser0-Data-I "1 0 1"
 caput SAR-CCTA-ESA:seq0Ser1-Data-I "0 1 0"
@@ -321,6 +342,7 @@ caput SAR-CCTA-ESA:seq0Ctrl-Length-I 3
 caput SAR-CCTA-ESA:seq0Ctrl-Cycles-I 1
 caput SAR-CCTA-ESA:seq0Ctrl-Start-I 1
 \end{lstlisting}
+\end{minipage}
 
 \subsection{Python library}
 The python library is available in the PSI python 3.6 environment. You can get
@@ -342,8 +364,8 @@ sequence[201] = [0, 1, 0]
 # upload
 lib.upload(sequence)
 
-# start (one repetition)
-lib.start(1)
+# start
+lib.start()
 \end{lstlisting}
 
 Refer to the python docstrings for more information about the available
@@ -359,6 +381,8 @@ cta\_lib\_ex02\_upload\_repeat\_n\_wait
 cta\_lib\_ex03\_upload\_run\_forever\_stop
 \item
 cta\_lib\_ex04\_callbacks
+\item
+cta\_lib\_ex05\_start\_modulo.py
 \end{itemize}
 You can call these scripts from the terminal command line. Use the -h option to get help.
 
@@ -372,6 +396,21 @@ with the resulting sequence of event codes.
 	\includegraphics[width=\columnwidth]{./img/ex_single_seq_1}
 	\caption{GUI and resulting event code sequence}
 	\label{fig:pulser_generic}
+\end{figure}
+
+\subsection{One local sequence started if modulo expression is true}\label{subsec:one_seq_modulo}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\columnwidth]{./img/ex_single_seq_2}
+	\caption{GUI and resulting event code sequence}
+	\label{fig:pulser_generic}
+\end{figure}
+
+\subsection{Generating 50 Hz event with CTA}\label{subsec:one_seq_50Hz}
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=\columnwidth]{./img/50_hz}
+	\caption{GUI and resulting event code sequence}
 \end{figure}
 
 \end{document}
