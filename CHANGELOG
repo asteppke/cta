@@ -1,3 +1,8 @@
+1.0.4 2019-04-29
+  - Added "if ((pulseid % divisor) - offset == 0)" sequence start mode
+  - Added "Started at" status
+  - Added python interface to cta
+
 1.0.3 2018-09-26
   - Added user manual
 
