@@ -1,29 +1,45 @@
 #!/bin/bash
 
-CURRENTDIR=`pwd`
+# Colors to match python parser
+BLUE="\033[1;34m"
+GREEN="\033[1;32m"
+RESET="\033[0m"
 
-# Resolve symlinks
-BASEDIR=$0
-while [ -h "$BASEDIR" ]; do
-    ls=`ls -ld "$BASEDIR"`
-    link=`expr "$ls" : '^.*-> \(.*\)$' 2>/dev/null`
-    if expr "$link" : '^/' 2> /dev/null >/dev/null; then
-        BASEDIR="$link"
-    else
-        BASEDIR="`dirname "$BASEDIR"`/$link"
-    fi
-done
-BASEDIR=`dirname "$BASEDIR"`
+# Find real absolute path of the python file 
+BASEDIR="$(dirname "$(readlink -f "$0")")"
 
-PYTHON_DIR=/opt/gfa/python
+DEV_MODE=0
 
-if [ ! -f $PYTHON_DIR ]; then
-  echo "ERROR: Unexpected environment."
-  echo "ERROR: File $PYTHON_DIR to load gfa python not found."
-  exit 1
-else
-  source $PYTHON_DIR ""
+if [ "$1" = "--dev" ]; then
+    DEV_MODE=1
+    shift
 fi
 
-python $BASEDIR/cta_gui.py $@
+# Check python installation 
+#----------------------------------------------------
+if ! command -v python >/dev/null 2>&1; then
+    echo "ERROR: Python not found in PATH."
+    exit 1
+fi
 
+# Check CTA installation 
+#----------------------------------------------------
+if ! python -c "import cta_lib; import PyQt5" >/dev/null 2>&1; then
+    echo "ERROR: CTA Python environment or PyQt5 not detected."
+    exit 1
+fi
+
+# Dev mode, PYTHONPATH gives priority to local folder
+#----------------------------------------------------
+if [ "$DEV_MODE" -eq 1 ]; then
+    export PYTHONPATH="$(dirname "$BASEDIR")/lib:$PYTHONPATH"
+fi
+
+if [ $# -eq 0 ] || [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
+	echo -e "${BLUE}Wrapper options:${RESET}"
+	echo -e "  ${GREEN}--dev${RESET}	Use Local development cta_lib instead of installed package"
+	echo 
+	exec python "$BASEDIR/cta_gui.py" --help
+fi
+
+exec python "$BASEDIR/cta_gui.py" "$@"

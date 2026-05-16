@@ -1,5 +1,6 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 import sys
 from epics import PV
 import numpy
@@ -74,7 +75,7 @@ class SequenceTableModel(QAbstractTableModel):
         # update view
         self.dataChanged.emit(uIndTopLeft, uIndBotRight)
 
-        self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
+        self.__parent.update_equal_not_equal[object].emit(SequenceState.UNEQUAL)
 
         return True
 
@@ -218,7 +219,7 @@ class SequenceTableModel(QAbstractTableModel):
         
         self.endInsertRows()
         
-        self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
+        self.__parent.update_equal_not_equal[object].emit(SequenceState.UNEQUAL)
 
         logging.info('SequenceTableModel.insertRows() is done')
 
@@ -249,7 +250,7 @@ class SequenceTableModel(QAbstractTableModel):
 
         self.endRemoveRows()
         
-        self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
+        self.__parent.update_equal_not_equal[object].emit(SequenceState.UNEQUAL)
 
         logging.info('SequenceTableModel.removeRowsKeepStepOff is done')
 
@@ -280,7 +281,7 @@ class SequenceTableModel(QAbstractTableModel):
 
         self.endRemoveRows()
         
-        self.__parent.emit(SIGNAL("update_equal_not_equal"), SequenceState.UNEQUAL)
+        self.__parent.update_equal_not_equal[object].emit(SequenceState.UNEQUAL)
 
         logging.info('SequenceTableModel.removeRowsKeepStartOff is done')
 
@@ -344,16 +345,33 @@ class SequenceTableModel(QAbstractTableModel):
 
         logging.debug(series)
 
+        # normalize input ( [array(0)], [0] and None depending on status...)
+        normalised = []
+        for s in series:
+            if s is None:
+                normalised.append([])
+            else:
+                normalised.append([
+                    int(numpy.asarray(x).item()) 
+                    for x in s 
+                    if x is not None and numpy.asarray(x).size==1
+                ])
+
+        series = normalised
+
         # init sequence
         s = 0
+
         for i in range(len(self.__localEvents)):
             s += sum(series[i])
+        
         self.__sequence = [None] * s
         for i in range(s):
             self.__sequence[i] = [None] * 3
 
         # loop over series
         row = 0
+        
         for i in range(len(series[0])):
 
             # loop over local events
@@ -442,9 +460,16 @@ class SequenceTableView(QTableView):
 
 class SequenceDialog(QWidget):
 
+    # Create signal objects
+    set_max_length = pyqtSignal(object)
+    update_rep_config = pyqtSignal(object)
+    update_equal_not_equal = pyqtSignal([object], [object, object, object])
+    update_run_status = pyqtSignal(object, object)
+    update_start_config = pyqtSignal(object, object, object)
+    upload_sequence = pyqtSignal()       
+
     def __init__(self, args):
 
-        # call base class constructor
         super(SequenceDialog, self).__init__()
 
         # save args for later
@@ -471,12 +496,12 @@ class SequenceDialog(QWidget):
         self.__leditOffset.editingFinished.connect(self.start_config_changed)
         self.__btnInsertRow.clicked.connect(self.btnInsertRowAction)
         self.__btnRemoveRow.clicked.connect(self.btnRemoveRowAction)
-        self.connect(self, SIGNAL("set_max_length"), self.__update_max_length)
-        self.connect(self, SIGNAL("update_rep_config"), self.__update_rep_config)
-        self.connect(self, SIGNAL("update_equal_not_equal"), self.__update_equal_not_equal)
-        self.connect(self, SIGNAL("update_run_status"), self.__update_run_status)
-        self.connect(self, SIGNAL("update_start_config"), self.__update_start_config)
-        self.connect(self, SIGNAL("upload_sequence"), self.__upload_sequence)
+        self.set_max_length.connect(self.__update_max_length)
+        self.update_rep_config.connect(self.__update_rep_config)
+        self.update_equal_not_equal.connect(self.__update_equal_not_equal)
+        self.update_run_status.connect(self.__update_run_status)
+        self.update_start_config.connect(self.__update_start_config)
+        self.upload_sequence.connect(self.__upload_sequence)
 
         # create pv objects
         self.pvSerMaxLen = PV(args.device + ':SerMaxLen-O',
@@ -681,7 +706,7 @@ class SequenceDialog(QWidget):
         logging.info('SequenceDialog.__on_pv_max_length_change() is running')
 
         logging.debug('pv %s has changed, new value=%s', pvname, char_value)
-        self.emit(SIGNAL("set_max_length"), value)
+        self.set_max_length.emit(value)
 
         logging.info('SequenceDialog.__on_pv_max_length_change() is done')
 
@@ -693,7 +718,7 @@ class SequenceDialog(QWidget):
         logging.info('SequenceDialog.__on_pvs_rep_conf_change() is running')
 
         logging.debug('pv %s has changed, new value=%s', pvname, char_value)
-        self.emit(SIGNAL("update_rep_config"), value)
+        self.update_rep_config.emit(value)
 
         logging.info('SequenceDialog.__on_pvs_rep_conf_change() is done')
 
@@ -712,12 +737,12 @@ class SequenceDialog(QWidget):
         logging.debug('pv %s has changed, new value=%s', pvname , str(value))
 
         # transform value to list
-        if len(value) > 1:
-            series_ioc = value.tolist()
+        if hasattr(value, "__len__"):
+            series_ioc = [int(numpy.asarray(x).item()) for x in value] 
         else:
-            series_ioc = [value]
+            series_ioc = [int(numpy.asarray(value).item())]
 
-        self.emit(SIGNAL("update_equal_not_equal"), SequenceState.CHECK, series_index, series_ioc)
+        self.update_equal_not_equal[object].emit(SequenceState.UNEQUAL)
 
         logging.info('SequenceDialog.__on_pvs_seq_change() is done')
 
@@ -730,7 +755,7 @@ class SequenceDialog(QWidget):
         logging.info('SequenceDialog.__on_pvs_run_status_change() is running')
 
         logging.debug('pv %s has changed, new value=%s', pvname, char_value)
-        self.emit(SIGNAL("update_run_status"), pvname, value)
+        self.update_run_status.emit(pvname, value)
 
         logging.info('SequenceDialog.__on_pvs_run_status_change() is done')
 
@@ -742,7 +767,7 @@ class SequenceDialog(QWidget):
         logging.info('SequenceDialog.__on_pvs_start_config_change() is running')
 
         logging.debug('pv %s has changed, new value=%s', pvname, char_value)
-        self.emit(SIGNAL("update_start_config"), pvname, value, char_value)
+        self.update_start_config.emit(pvname, value, char_value)
 
         logging.info('SequenceDialog.__on_pvs_start_config_change() is done')
 
@@ -988,7 +1013,8 @@ class SequenceDialog(QWidget):
 
         self.__model.setSeries(series)
 
-        self.__model.reset()
+        self.__model.beginResetModel()
+        self.__model.endResetModel()
 
         self.__update_equal_not_equal(SequenceState.EQUAL)
 
@@ -1096,14 +1122,36 @@ class SequenceDialog(QWidget):
 if __name__ == '__main__':
     
     # setup parser
-    parser = argparse.ArgumentParser()
-    parser.add_argument('esx', help='Specify experimental station for which '
-        'the CTA GUI shall be started.', choices=['ESA', 'ESB', 'ESC', 'ESD', 'ESE', 'ESF', 'SFTEST'])
-    parser.add_argument('device', help='Name of device running CTA.')
-    parser.add_argument('-l', '--loglevel', help='Specify level for logging '
-        '(used for debugging)'
-        , choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'],
-        default = 'WARNING')
+    parser = argparse.ArgumentParser(
+            formatter_class=argparse.RawTextHelpFormatter,
+            prog='start_cta_gui.sh',
+            description='CTA Graphical interface',
+            epilog="""Example:
+start_cta_gui.sh ESA SAR-CCTA-TI2
+            """
+            )
+    parser.add_argument(
+            'esx', 
+            metavar='ESX',
+            choices=['ESA', 'ESB', 'ESC', 'ESD', 'ESE', 'ESF', 'SFTEST'],
+            help="""Experimental station: ESA, ESB, ESC, ESD, ESE, ESF
+Test stand: SFTEST
+            """
+    )
+
+    parser.add_argument(
+            'device', 
+            help='Name of device running CTA.'
+    )
+    parser.add_argument(
+            '-l', '--loglevel', 
+            metavar='level',
+            choices=['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG'],
+            default = 'WARNING',
+            help="""Specify level for logging
+CRITICAL, ERROR, WARNING, INFO, DEBUG
+            """
+    )
     args = parser.parse_args()
 
     # setup logging
